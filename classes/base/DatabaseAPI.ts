@@ -1,8 +1,7 @@
 import {Database} from "../abstract/Database";
-import {DatabaseParams} from "../../interfaces/DatabaseParams";
 import {Nothing} from "../../types/Nothing";
-import {DatabaseQueryApiParams} from "../../interfaces/DatabaseQueryApiParams";
 import {FieldPacket} from "mysql2";
+import {Query} from "../../interfaces/Query";
 
 export class DatabaseAPI extends Database {
 
@@ -10,11 +9,21 @@ export class DatabaseAPI extends Database {
         super();
     }
 
-    public async databaseSetQuery(params: DatabaseQueryApiParams) : Nothing {
+    /**
+     * Executes a query that modifies the database (e.g., INSERT, UPDATE, DELETE).
+     * @param params - The parameters required for the query, including the SQL statement and the parameters for the query.
+     * @returns Nothing (Promise<void>).
+     */
+    public async databaseSetQuery(params: Query) : Nothing {
         await DatabaseAPI.connection.query(params.sql, params.params);
     }
 
-    public async databaseGetQuery(params: DatabaseQueryApiParams) : Promise<any[]> {
+    /**
+     * Executes a query that retrieves data from the database (e.g., SELECT).
+     * @param params - The parameters required for the query, including the SQL statement and the parameters for the query.
+     * @returns An array of rows returned by the query.
+     */
+    public async databaseGetQuery(params: Query) : Promise<any[]> {
         const [rows, fields]: [any[], FieldPacket[]] = await DatabaseAPI.connection.query(params.sql, params.params);
         return rows as any[];
     }

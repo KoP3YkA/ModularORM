@@ -1,5 +1,1 @@
-export abstract class BaseEnumClass {
-
-
-
-}
+export abstract class BaseEnumClass {}

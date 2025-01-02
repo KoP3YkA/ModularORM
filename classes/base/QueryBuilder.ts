@@ -30,8 +30,9 @@ export class QueryBuilder extends BaseBuilder {
     }
 
     /**
-     * Set query type (INSERT, DELETE and more)
-     * @param type - QueryType
+     * Sets the type of query (e.g., INSERT, DELETE, etc.).
+     * @param type - The type of the query (QueryType).
+     * @returns The current QueryBuilder instance.
      */
     public setType(type: QueryType) : QueryBuilder {
         this.queryType = type;
@@ -39,8 +40,9 @@ export class QueryBuilder extends BaseBuilder {
     }
 
     /**
-     * Add INSERT values
-     * @param insert - InsertBuilder
+     * Specifies the INSERT values for the query.
+     * @param insert - An instance of InsertBuilder that defines the values to insert.
+     * @returns The current QueryBuilder instance.
      */
     public setInsert(insert: InsertBuilder) : QueryBuilder {
         this.whatInsert = insert;
@@ -48,8 +50,9 @@ export class QueryBuilder extends BaseBuilder {
     }
 
     /**
-     * Sets up a table
-     * @param table - any class extends Module
+     * Defines the table to be used in the query.
+     * @param table - A class that extends the Module class, representing the table.
+     * @returns The current QueryBuilder instance.
      */
     public setTable(table: Module) : QueryBuilder {
         this.table = table;
@@ -57,8 +60,9 @@ export class QueryBuilder extends BaseBuilder {
     }
 
     /**
-     * Sets what needs to be taken from the table
-     * @param select - SelectBuilder
+     * Specifies what to select from the table.
+     * @param select - An instance of SelectBuilder that defines the fields to select.
+     * @returns The current QueryBuilder instance.
      */
     public setSelect(select: SelectBuilder) : QueryBuilder {
         this.whatSelect = select;
@@ -66,8 +70,9 @@ export class QueryBuilder extends BaseBuilder {
     }
 
     /**
-     * Adds a WHERE query
-     * @param where - WhereBuilder
+     * Adds a WHERE condition to the query.
+     * @param where - An instance of WhereBuilder that defines the WHERE condition.
+     * @returns The current QueryBuilder instance.
      */
     public setWhere(where: WhereBuilder) : QueryBuilder {
         this.where = where;
@@ -75,8 +80,9 @@ export class QueryBuilder extends BaseBuilder {
     }
 
     /**
-     * Sets the ORDER BY column DESC query
-     * @param column - name of column
+     * Sets the ORDER BY clause with descending order for a specific column.
+     * @param column - The name of the column to order by in descending order.
+     * @returns The current QueryBuilder instance.
      */
     public setDesc(column: string) : QueryBuilder {
         this.desc = column;
@@ -84,8 +90,9 @@ export class QueryBuilder extends BaseBuilder {
     }
 
     /**
-     * Sets a limit
-     * @param limit - limit, number
+     * Limits the number of results returned by the query.
+     * @param limit - The maximum number of results to return.
+     * @returns The current QueryBuilder instance.
      */
     public setLimit(limit: number) : QueryBuilder {
         this.limit = limit;
@@ -93,8 +100,9 @@ export class QueryBuilder extends BaseBuilder {
     }
 
     /**
-     * Sets GROUP BY query
-     * @param column - name of column
+     * Specifies a GROUP BY clause for the query.
+     * @param column - The name of the column to group by.
+     * @returns The current QueryBuilder instance.
      */
     public setGroup(column: string) : QueryBuilder {
         this.group = column;
@@ -102,8 +110,9 @@ export class QueryBuilder extends BaseBuilder {
     }
 
     /**
-     * Sets HAVING
-     * @param having - HavingBuilder
+     * Adds a HAVING condition to the query.
+     * @param having - An instance of HavingBuilder that defines the HAVING condition.
+     * @returns The current QueryBuilder instance.
      */
     public setHaving(having: HavingBuilder) : QueryBuilder {
         this.having = having;
@@ -111,8 +120,9 @@ export class QueryBuilder extends BaseBuilder {
     }
 
     /**
-     * Sets OFFSET
-     * @param offset - offset, number
+     * Specifies an OFFSET value for the query.
+     * @param offset - The number of rows to skip before starting to return rows.
+     * @returns The current QueryBuilder instance.
      */
     public setOffset(offset: number) : QueryBuilder {
         this.offset = offset;
@@ -120,8 +130,9 @@ export class QueryBuilder extends BaseBuilder {
     }
 
     /**
-     * Use in UPDATE query's
-     * @param update - UpdateBuilder
+     * Specifies the UPDATE values for the query.
+     * @param update - An instance of UpdateBuilder that defines the fields to update.
+     * @returns The current QueryBuilder instance.
      */
     public setUpdate(update: UpdateBuilder) : QueryBuilder {
         this.whatUpdate = update;

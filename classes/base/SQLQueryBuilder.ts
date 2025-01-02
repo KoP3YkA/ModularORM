@@ -69,7 +69,7 @@ export class SQLQueryBuilder {
         if (type == QueryType.INSERT) {
             const insert = builder.whatInsert;
             if (!insert) {
-                Errors.MISSING_INSERT_FIELD.throw();
+                Errors.MISSING_INSERT_FIELDS.throw();
                 return errorRes
             }
             sql += ` ${insert.toQuery}`;
@@ -94,7 +94,7 @@ export class SQLQueryBuilder {
         if (type === QueryType.UPDATE) {
             const sets = builder.whatUpdate;
             if (!sets || sets.updates.length < 1) {
-                Errors.MISSING_UPDATE_FIELD.throw();
+                Errors.MISSING_UPDATE_FIELDS.throw();
                 return errorRes;
             }
             sql += ` SET ${sets.values.join(', ')}`;

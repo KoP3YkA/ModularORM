@@ -88,6 +88,6 @@ export class WhereBuilder extends BaseBuilder {
         return this.values;
     }
 
-    public build(t: any): any {Errors.BUILDER_DONT_HAVE_BUILD_METHOD.throw();}
+    public build(t: any): any {Errors.BUILDER_MISSING_BUILD_METHOD.throw();}
 
 }
