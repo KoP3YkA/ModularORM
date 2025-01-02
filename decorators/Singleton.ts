@@ -3,6 +3,6 @@
  * Indicates that the class follows the Singleton principle.
  * Do not instantiate objects of classes with this decorator.
  */
-export function Singleton(target: any, propertyName: string, descriptor: PropertyDescriptor) {
+export function Singleton(target: any) {
 
 }
