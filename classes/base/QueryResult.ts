@@ -1,1 +1,0 @@
-export class QueryResult {[key: string]: any;}
