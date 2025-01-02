@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ModularORM Documentation</title>
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/themes/prism-okaidia.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #2c3e50;
+            font-family: 'Arial', sans-serif;
+            color: #ecf0f1;
+            margin: 0;
+            padding: 0;
+        }
+        h1, h2 {
+            color: #ecf0f1;
+            text-align: center;
+        }
+        h2 {
+            font-family: "Trebuchet MS", sans-serif;
+            color: #3498db;
+        }
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .steps {
+            background-color: #34495e;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .steps h3 {
+            color: #e74c3c;
+        }
+        .steps p {
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+        .code-block {
+            background-color: #1e2a33;
+            color: #f39c12;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin-top: 10px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+
+        /* Стиль для кнопки */
+        .next-step {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #3498db;
+            color: white;
+            font-size: 1.2em;
+            padding: 10px 20px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .next-step:hover {
+            background-color: #2980b9;
+        }
+        .next-step .arrow {
+            margin-left: 10px;
+            font-size: 1.5em;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Modular ORM Documentation</h1>
+
+    <h2>Getting Started</h2>
+
+    <div class="steps">
+        <h3>Step 1: Install Dependencies</h3>
+        <p>Before you begin using ModularORM, you need to install the necessary dependencies. Run the following command in your project directory:</p>
+        <pre class="code-block"><code class="language-bash">npm install typescript ts-node reflect-metadata mysql2</code></pre>
+    </div>
+
+    <div class="steps">
+        <h3>Step 2: Clone the Repository</h3>
+        <p>Next, clone the repository into your project directory. Create a folder named <strong>database</strong> and clone the repository there:</p>
+        <pre class="code-block"><code class="language-bash">git clone https://github.com/KoP3YkA/ModularORM.git</code></pre>
+    </div>
+
+    <div class="steps">
+        <h3>Step 3: Configure TypeScript</h3>
+        <p>Create a <code>tsconfig.json</code> file in your project and make sure the following options are set:</p>
+        <pre class="code-block"><code class="language-json">
+{
+    "compilerOptions": {
+        "target": "es2016",
+        "module": "commonjs",
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+        "strict": true,
+        "skipLibCheck": true,
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true
+    }
+}
+            </code></pre>
+    </div>
+
+    <div class="steps">
+        <h3>Step 4: Initialize the Database</h3>
+        <p>To start using ModularORM, import the main class, get its instance, and call the asynchronous <code>start</code> method to connect to your database. Pass your database configuration as follows:</p>
+        <pre class="code-block"><code class="language-ts">
+import { ModularORM } from "./database/ModularORM/modularorm";
+
+new Promise(async (re, rj) => {
+    const database = ModularORM.getInstance;
+    await database.start({
+        host: 'localhost',
+        password: '',
+        user: 'root',
+        database: 'orm',
+        port: 3306
+    })
+})
+            </code></pre>
+    </div>
+
+    <div class="steps">
+        <h3>Creating tables</h3>
+        <p>To create a new table, you need to create a class that inherits from the Module class. Then, override the static table() method to return the name of your table. Add the @Table annotation to the class. To create columns, define the class fields, where the field name will correspond to the column name in the database, and add the @Column annotation, passing the necessary parameters.</p>
+        <pre class="code-block"><code class="language-ts">
+@Table
+class Users extends Module {
+    @Column({
+        type: ColumnType.INTEGER,
+        autoIncrement: true,
+    })
+    public id : number = 1;
+
+    @Column({
+        type: ColumnType.VARCHAR(255),
+        notNull: true,
+    })
+    public userId : string = "";
+
+    public static override get table() {return "users";}
+}
+            </code></pre>
+        <p>IMPORTANT: For tables to be created correctly, the classes must be defined before connecting to the database, that is, before calling the start() method in the main class. If the classes were created later, you need to call the init() method on the Database object (e.g., await Database.init()).</p>
+    </div>
+
+    <div class="steps">
+        <h3>Creating SQL query`s</h3>
+        <p>Database interactions are performed through the QueryBuilder class. You need to create an instance of this class and then use its methods to build the SQL query.</p>
+        <pre class="code-block"><code class="language-ts">
+class Chats extends Module {
+        @Column({
+            type: ColumnType.VARCHAR(255)
+        })
+        public chatId : string = ''
+
+        public static override get table() {return "chats";}
+}
+
+const builder : QueryBuilder = new QueryBuilder()
+      .setType(QueryType.UPDATE)
+      .setTable(Chats)
+      .setWhere(
+        new WhereBuilder()
+          .equalAnd('chatId', '123')
+      )
+      .setUpdate(
+        new UpdateBuilder()
+          .add('chatId', '321')
+      )
+
+const query : FinalQuery = builder.build()
+            </code></pre>
+    </div>
+
+    <div class="steps">
+        <h3>Final Query</h3>
+        <p>execute() method: Sends the query to the database and returns nothing.</p>
+        <pre class="code-block"><code class="language-ts">
+class Books extends Module {
+        @Column({
+            type: ColumnType.INTEGER,
+            autoIncrement: true
+        })
+        public bookId : number = 1
+
+        @Column({
+            type: ColumnType.INTEGER
+        })
+        public price : number = 1
+
+        public static override get table() {return "books";}
+}
+
+const builder : QueryBuilder = new QueryBuilder()
+      .setType(QueryType.INSERT)
+      .setTable(Books)
+      .setInsert(
+            new InsertBuilder()
+                .add('price', 3400)
+      )
+const query : FinalQuery = builder.build()
+await query.execute() // INSERT INTO books (price) VALUES (3400)
+            </code></pre>
+        <p>get<T>(T) method: Sends the query to the database and returns the results as an array of T[] objects, where T is a class that extends QueryResult.</p>
+        <pre class="code-block"><code class="language-ts">
+class Books extends Module {
+        @Column({
+            type: ColumnType.INTEGER,
+            autoIncrement: true
+        })
+        public bookId : number = 1
+
+        @Column({
+            type: ColumnType.INTEGER
+        })
+        public price : number = 1
+
+        public static override get table() {return "books";}
+}
+
+class QueryRes extends QueryResult {
+
+    @Result('bookId')
+    public id: number = 1;
+
+    @Result('price')
+    public price: number = 1;
+
+}
+
+const builder : QueryBuilder = new QueryBuilder()
+      .setType(QueryType.SELECT)
+      .setTable(Books)
+      .setSelect(
+            new SelectBuilder()
+                .addColumn('bookId')
+                .addColumn('price')
+      )
+const query : FinalQuery = builder.build()
+const res : QueryRes[] = await query.get&lt;QueryRes&gt;(QueryRes)
+            </code></pre>
+    </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/prism.min.js"></script>
+</body>
+</html>
