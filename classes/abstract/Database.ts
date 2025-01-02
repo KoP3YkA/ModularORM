@@ -1,8 +1,6 @@
 import {DatabaseParams} from "../../interfaces/DatabaseParams";
 import {Connection, createConnection} from "mysql2/promise";
 import {Nothing} from "../../types/Nothing";
-import {Module} from "./Module";
-import {Chat} from "../../test/Chat";
 
 export abstract class Database {
 

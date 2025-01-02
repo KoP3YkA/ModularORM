@@ -2,8 +2,6 @@ import {QueryBuilder} from "./QueryBuilder";
 import {Nothing} from "../../types/Nothing";
 import {SQLQueryBuilder} from "./SQLQueryBuilder";
 import {Query} from "../../interfaces/Query";
-import {ModularORM} from "../../modularorm";
-import {Database} from "../abstract/Database";
 import {DatabaseAPI} from "./DatabaseAPI";
 import {QueryResult} from "./QueryResult";
 
