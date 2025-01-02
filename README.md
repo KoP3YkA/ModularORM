@@ -1,38 +1,14 @@
-<h1>ModularORM</h1>
-<p><strong>ModularORM</strong> is a lightweight and flexible TypeScript ORM library designed to make database interaction easier and more intuitive. It allows you to work with your database using pre-built classes and interfaces, reducing boilerplate code and speeding up development while maintaining flexibility and control over your project.</p>
+# ModularORM
 
-<h2>Features</h2>
+ModularORM is a powerful and flexible Object-Relational Mapping (ORM) library for TypeScript that allows developers to interact with SQL databases through TypeScript classes. The library abstracts the complexity of SQL queries while offering a rich and extensible API for building complex queries with ease.
+
+## Features
+
 <ul>
-  <li>Easy to use: Work with your database using pre-defined classes and interfaces.</li>
-  <li>Flexible: Adaptable to your specific project needs without rigid constraints.</li>
-  <li>Lightweight: Focuses on simplicity without sacrificing functionality.</li>
-  <li>TypeScript support: Fully written in TypeScript, ensuring type safety and better developer experience.</li>
+  <li><strong>Dynamic Query Builder:</strong> Build and execute SQL queries dynamically with classes like <code>InsertBuilder</code>, <code>UpdateBuilder</code>, <code>SelectBuilder</code>, and more.</li>
+  <li><strong>Table Mapping:</strong> Easily map TypeScript classes to database tables using decorators like <code>@Table</code> and <code>@Column</code>.</li>
+  <li><strong>Column Types:</strong> Use predefined column types (e.g., <code>ColumnType.INTEGER</code>, <code>ColumnType.VARCHAR</code>) or extend them as needed.</li>
+  <li><strong>Custom SQL Functions:</strong> Includes predefined functions like <code>CURRENT_TIMESTAMP</code>, <code>UUID()</code>, and <code>RAND()</code>. Create complex SQL expressions with <code>SqlFunctions</code>.</li>
+  <li><strong>Query Results Mapping:</strong> Automatically map query results to TypeScript class instances with <code>@Result</code> decorator.</li>
+  <li><strong>Advanced Error Handling:</strong> Comprehensive error management integrated throughout the library.</li>
 </ul>
-
-<h2>Installation</h2>
-<pre><code>npm install modularorm</code></pre>
-
-<h2>Usage</h2>
-<p>Here's a simple example of how to use <strong>ModularORM</strong> to create a table:</p>
-
-<pre><code>
-// Example of creating a table using ModularORM
-import { TableBuilder, ColumnBuilder } from 'modularorm';
-
-const table = new TableBuilder('users')
-  .addColumn(new ColumnBuilder('id').primaryKey().autoIncrement())
-  .addColumn(new ColumnBuilder('username').notNull())
-  .addColumn(new ColumnBuilder('email').unique())
-  .create();
-
-console.log(table);
-</code></pre>
-
-<h2>Documentation</h2>
-<p>For full documentation and examples, visit the <a href="https://github.com/yourusername/modularorm/wiki">ModularORM Wiki</a>.</p>
-
-<h2>Contributing</h2>
-<p>If you'd like to contribute to ModularORM, feel free to fork the repository, create a branch, and submit a pull request. Please ensure your code follows the existing style and includes tests where applicable.</p>
-
-<h2>License</h2>
-<p>ModularORM is licensed under the MIT License. See the <a href="LICENSE">LICENSE</a> file for more details.</p>
