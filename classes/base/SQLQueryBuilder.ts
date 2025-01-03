@@ -77,6 +77,18 @@ export class SQLQueryBuilder {
             return {sql, params: values};
         }
 
+        // #----------- UPDATE -----------#
+
+        if (type === QueryType.UPDATE) {
+            const sets = builder.whatUpdate;
+            if (!sets || sets.updates.length < 1) {
+                Errors.MISSING_UPDATE_FIELDS.throw();
+                return errorRes;
+            }
+            sql += ` SET ${sets.updates.join(', ')}`;
+            values = [...values, ...sets.updates];
+        }
+
         // #----------- WHERE CLAUSE -----------#
         if (type === QueryType.UPDATE && builder.where) {
             const where : WhereBuilder = builder.where;
@@ -87,18 +99,6 @@ export class SQLQueryBuilder {
             const where : WhereBuilder = builder.where;
             sql += ` WHERE ${where.toString()}`;
             values = [...values, ...where.getValues()];
-        }
-
-        // #----------- UPDATE -----------#
-
-        if (type === QueryType.UPDATE) {
-            const sets = builder.whatUpdate;
-            if (!sets || sets.updates.length < 1) {
-                Errors.MISSING_UPDATE_FIELDS.throw();
-                return errorRes;
-            }
-            sql += ` SET ${sets.values.join(', ')}`;
-            values = [...values, ...sets.updates];
         }
 
         // #----------- ORDER BY column DESC -----------#
