@@ -12,3 +12,5 @@ ModularORM is a powerful and flexible Object-Relational Mapping (ORM) library fo
   <li><strong>Query Results Mapping:</strong> Automatically map query results to TypeScript class instances with <code>@Result</code> decorator.</li>
   <li><strong>Advanced Error Handling:</strong> Comprehensive error management integrated throughout the library.</li>
 </ul>
+
+## [Documentation](https://kop3yka.github.io/ModularORM/)
