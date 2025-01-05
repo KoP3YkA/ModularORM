@@ -52,6 +52,12 @@ export class ColumnType extends BaseEnumClass {
      */
     public static DATE : ColumnType = new ColumnType('DATE');
 
+    /**
+     * Represents the `BOOLEAN` column type.
+     * Used for storing whole true of false values.
+     */
+    public static BOOLEAN : ColumnType = new ColumnType('BOOLEAN');
+
     // -------------------------------------------------------
 
     public constructor(
