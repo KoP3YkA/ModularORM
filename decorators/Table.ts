@@ -29,6 +29,7 @@ export function Table(target: any) {
 
         if (params.defaultValue !== null) {
             if (params.defaultValue instanceof SqlFunctions) columnSQL += ` DEFAULT ${params.defaultValue.name}`;
+            else if (typeof params.defaultValue === "boolean") columnSQL += ` DEFAULT ${params.defaultValue}`
             else columnSQL += ` DEFAULT '${params.defaultValue}'`;
         }
 
