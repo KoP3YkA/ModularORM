@@ -32,15 +32,26 @@ export class InsertBuilder extends BaseBuilder {
      * @param value - The value to be inserted into the specified column.
      * @returns The current InsertBuilder instance for method chaining.
      */
-    public add(column: string, value: any) : this {
+    public add(column: string, value: any): this {
         this.values.set(column, value);
         return this;
     }
 
-    private get getShieldedValues() : string {
-        return Array.from(this.values.values())
-            .map(obj => '?')
-            .join(',')
+    private get getShieldedValues(): string {
+        if (this.separated) {
+            return Array.from(this.values.values())
+                .map(() => '?')
+                .join(',');
+        }
+        else {
+            return Array.from(this.values.entries())
+                .map(([column, value]) => `${column}=${this.getShieldedValue(value)}`)
+                .join(', ');
+        }
+    }
+
+    private getShieldedValue(value: any): string {
+        return '?';
     }
 
     /**
@@ -48,11 +59,13 @@ export class InsertBuilder extends BaseBuilder {
      * @returns The SQL query string for the INSERT operation.
      */
     public get toQuery(): string {
-        if (!this.separated) return `VALUES (${this.getShieldedValues})`
-        else return `(${
-            Array.from(this.values.keys())
-            .join(', ')
-        }) VALUES (${this.getShieldedValues})`
+        if (this.separated) {
+            return `(${
+                Array.from(this.values.keys()).join(', ')
+            }) VALUES (${this.getShieldedValues})`;
+        } else {
+            return `VALUES (${this.getShieldedValues})`;
+        }
     }
 
     /**
