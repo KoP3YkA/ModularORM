@@ -8,8 +8,9 @@ import 'reflect-metadata';
  * @param columnName - The name of the database column to be mapped to the class property.
  * @returns A property decorator that associates the class property with the specified column name from the query result.
  */
-export function Result(columnName: string): PropertyDecorator {
+export function Result(columnName?: string): PropertyDecorator {
     return (target, propertyKey) => {
-        Reflect.defineMetadata('result-mapping', columnName, target, propertyKey);
+        const column : string = columnName ?? String(propertyKey);
+        Reflect.defineMetadata('result-mapping', column, target, propertyKey);
     };
 }
