@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "moduleResolution": "Node",
+    "module": "CommonJS",
+    "declaration": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "outDir": "dist",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true
+  },
+  "include": ["src"],
+  "exclude": ["node_modules"]
+}
