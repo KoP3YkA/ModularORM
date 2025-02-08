@@ -23,6 +23,9 @@ export * from './classes/base/SQLQueryBuilder';
 export * from './classes/base/UpdateBuilder';
 export * from './classes/base/WhereBuilder';
 
+// ---------- ADAPTERS ----------
+export * from './classes/adapter/ModelAdapter'
+
 // ---------- DECORATORS ----------
 export * from './decorators/Column';
 export * from './decorators/Result';
@@ -33,6 +36,7 @@ export * from './decorators/NamedTable';
 export * from './interfaces/ColumnParams';
 export * from './interfaces/DatabaseParams';
 export * from './interfaces/Query';
+export * from './interfaces/SelectQueryParams'
 
 // ---------- TYPES ----------
 export * from './types/Nothing';

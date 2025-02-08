@@ -86,7 +86,7 @@ export class SQLQueryBuilder {
                 return errorRes;
             }
             sql += ` SET ${sets.updates.join(', ')}`;
-            values = [...values, ...sets.updates];
+            values = [...values, ...sets.values];
         }
 
         // #----------- WHERE CLAUSE -----------#
@@ -96,6 +96,11 @@ export class SQLQueryBuilder {
             values = [...values, ...where.getValues()];
         }
         if (type === QueryType.SELECT && builder.where) {
+            const where : WhereBuilder = builder.where;
+            sql += ` WHERE ${where.toString()}`;
+            values = [...values, ...where.getValues()];
+        }
+        if (type === QueryType.DELETE && builder.where) {
             const where : WhereBuilder = builder.where;
             sql += ` WHERE ${where.toString()}`;
             values = [...values, ...where.getValues()];
