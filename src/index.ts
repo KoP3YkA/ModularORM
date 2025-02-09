@@ -26,6 +26,9 @@ export * from './classes/base/WhereBuilder';
 // ---------- ADAPTERS ----------
 export * from './classes/adapter/ModelAdapter'
 
+// ---------- COMMON ----------
+export { InformationSchema, InformationSchemaResult } from './classes/common/InformationSchema'
+
 // ---------- DECORATORS ----------
 export * from './decorators/Column';
 export * from './decorators/Result';
