@@ -58,6 +58,12 @@ export class ColumnType extends BaseEnumClass {
      */
     public static BOOLEAN : ColumnType = new ColumnType('BOOLEAN');
 
+    /**
+     * Represents the `JSON` column type.
+     * Used for json-objects
+     */
+    public static JSON : ColumnType = new ColumnType('JSON');
+
     // -------------------------------------------------------
 
     public constructor(

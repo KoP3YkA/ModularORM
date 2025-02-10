@@ -33,7 +33,9 @@ export class InsertBuilder extends BaseBuilder {
      * @returns The current InsertBuilder instance for method chaining.
      */
     public add(column: string, value: any): this {
-        this.values.set(column, value);
+        let validValue : any = value;
+        if (typeof value === 'object' && value !== null) validValue = JSON.stringify(value)
+        this.values.set(column, validValue);
         return this;
     }
 
