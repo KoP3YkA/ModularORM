@@ -34,6 +34,7 @@ export * from './decorators/Column';
 export * from './decorators/Result';
 export * from './decorators/Table';
 export * from './decorators/NamedTable';
+export * from './decorators/EventHandler';
 
 // ---------- INTERFACES ----------
 export * from './interfaces/ColumnParams';
@@ -44,6 +45,10 @@ export * from './interfaces/SelectQueryParams'
 // ---------- TYPES ----------
 export * from './types/Nothing';
 export * from './types/Or';
+export * from './types/QueryHandler'
 
 // ---------- NAMESPACES ----------
 export * from './namespaces/DefaultColumn'
+
+// ---------- ENUMS ----------
+export * from './enums/QueryExecuteType'

@@ -5,6 +5,7 @@ import {Module} from "../abstract/Module";
 import {Query} from "../../interfaces/Query";
 import {WhereBuilder} from "./WhereBuilder";
 import {HavingBuilder} from "./HavingBuilder";
+import {QueryEvent} from "../../interfaces/QueryEvent";
 
 export class SQLQueryBuilder {
 
@@ -20,10 +21,15 @@ export class SQLQueryBuilder {
         return sql;
     }
 
-    public toQuery() : Query {
+    public toQuery() : Query & QueryEvent {
         let sql : string = "";
         let values : any[] = [];
-        const errorRes : Query = {sql: "Error!", params: []}
+
+        const table : string = (this.builder.table as typeof Module).table;
+
+        const queryInfo : QueryEvent = {table: table, type: this.builder.queryType}
+        const errorRes : Query & QueryEvent = {sql: "Error!", params: [], ...queryInfo}
+
         // ----------------------------------
 
         const builder : QueryBuilder = this.builder;
@@ -46,7 +52,7 @@ export class SQLQueryBuilder {
                 break;
             }
             case QueryType.DROP: {
-                return {sql: this.addTable(builder, sql), params: []}
+                return {sql: this.addTable(builder, sql), params: [], ...queryInfo}
             }
             case QueryType.UPDATE: {
                 sql = this.addTable(builder, sql)
@@ -61,7 +67,7 @@ export class SQLQueryBuilder {
                 break;
             }
             case QueryType.TRUNCATE: {
-                return {sql: this.addTable(builder, sql), params: []}
+                return {sql: this.addTable(builder, sql), params: [], ...queryInfo}
             }
         }
 
@@ -74,7 +80,7 @@ export class SQLQueryBuilder {
             }
             sql += ` ${insert.toQuery}`;
             values = [...values, ...insert.getValues];
-            return {sql, params: values};
+            return {sql, params: values, ...queryInfo};
         }
 
         // #----------- UPDATE -----------#
@@ -134,7 +140,7 @@ export class SQLQueryBuilder {
         }
 
         // ----------------------------------
-        return {sql, params: values};
+        return {sql, params: values, ...queryInfo};
     }
 
 }
