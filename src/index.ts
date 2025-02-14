@@ -35,12 +35,15 @@ export * from './decorators/Result';
 export * from './decorators/Table';
 export * from './decorators/NamedTable';
 export * from './decorators/EventHandler';
+export * from './decorators/validators/factory/ValidatorFactory'
+export * from './decorators/validators/Validators'
 
 // ---------- INTERFACES ----------
 export * from './interfaces/ColumnParams';
 export * from './interfaces/DatabaseParams';
 export * from './interfaces/Query';
 export * from './interfaces/SelectQueryParams'
+export * from './interfaces/Validate'
 
 // ---------- TYPES ----------
 export * from './types/Nothing';

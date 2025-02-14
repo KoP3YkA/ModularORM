@@ -85,18 +85,39 @@ export class FinalQuery {
      */
     public async get<T extends QueryResult>(ctor: { new (): T }) : Promise<T[]> {
         this.toString();
+
         const dbResult : any[] = await new DatabaseAPI().databaseGetQuery({
             sql: this.sql,
             params: this.values
         });
+
         const res = dbResult.map(row => {
             let resultInstance = new ctor();
             for (const property of Object.keys(resultInstance)) {
                 const prototype = Object.getPrototypeOf(resultInstance);
                 const columnName = Reflect.getMetadata('resultAnnotations-mapping', prototype, property);
-                if (columnName && row.hasOwnProperty(columnName)) {
-                    (resultInstance as any)[property] = row[columnName];
-                }
+                if (!columnName || !row.hasOwnProperty(columnName)) continue;
+
+                (resultInstance as any)[property] = row[columnName];
+
+                if (!System.VALIDATORS.has(resultInstance.constructor)) continue;
+                const results : Set<Map<string, {func: (value: any, column: string) => boolean, message: string}>> = System.VALIDATORS.get(resultInstance.constructor) as Set<Map<string, {func: (value: any, column: string) => boolean, message: string}>>;
+
+                const thisColumnValidators : (Map<string, {func: (value: any, column: string) => boolean, message: string}>)[] = Array.from(results).filter(obj => obj.get(property))
+                if (thisColumnValidators.length < 1) continue;
+
+                thisColumnValidators.forEach(obj => {
+                    const validatorFunc = obj.get(property)
+
+                    if (validatorFunc && validatorFunc.func && !validatorFunc.func(row[columnName], property)) {
+                        const instanceErrors = (resultInstance as any)['validateErrors']
+                        if (instanceErrors instanceof Set) {
+                            instanceErrors.add(validatorFunc.message)
+                        }
+                    }
+
+                })
+
             }
 
             return resultInstance;
