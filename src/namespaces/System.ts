@@ -16,4 +16,6 @@ export namespace System {
         >
     > = new Map();
 
+    export const TRANSFORMS : Map<Object, Map<string, (value: any) => any>> = new Map();
+
 }

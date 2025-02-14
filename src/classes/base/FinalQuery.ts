@@ -98,7 +98,15 @@ export class FinalQuery {
                 const columnName = Reflect.getMetadata('resultAnnotations-mapping', prototype, property);
                 if (!columnName || !row.hasOwnProperty(columnName)) continue;
 
-                (resultInstance as any)[property] = row[columnName];
+                let entryResult = row[columnName];
+
+                if (System.TRANSFORMS.has(resultInstance.constructor)) {
+                    const results = System.TRANSFORMS.get(resultInstance.constructor) as Map<string, (value: any) => any>
+                    const thisColumnResult = results.get(property)
+                    if (thisColumnResult) entryResult = thisColumnResult(entryResult)
+                }
+
+                (resultInstance as any)[property] = entryResult;
 
                 if (!System.VALIDATORS.has(resultInstance.constructor)) continue;
                 const results : Set<Map<string, {func: (value: any, column: string) => boolean, message: string}>> = System.VALIDATORS.get(resultInstance.constructor) as Set<Map<string, {func: (value: any, column: string) => boolean, message: string}>>;
@@ -109,7 +117,7 @@ export class FinalQuery {
                 thisColumnValidators.forEach(obj => {
                     const validatorFunc = obj.get(property)
 
-                    if (validatorFunc && validatorFunc.func && !validatorFunc.func(row[columnName], property)) {
+                    if (validatorFunc && validatorFunc.func && !validatorFunc.func(entryResult, property)) {
                         const instanceErrors = (resultInstance as any)['validateErrors']
                         if (instanceErrors instanceof Set) {
                             instanceErrors.add(validatorFunc.message)

@@ -37,6 +37,7 @@ export * from './decorators/NamedTable';
 export * from './decorators/EventHandler';
 export * from './decorators/validators/factory/ValidatorFactory'
 export * from './decorators/validators/Validators'
+export * from './decorators/dto/Transform'
 
 // ---------- INTERFACES ----------
 export * from './interfaces/ColumnParams';
