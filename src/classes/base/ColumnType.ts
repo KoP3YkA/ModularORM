@@ -66,8 +66,30 @@ export class ColumnType extends BaseEnumClass {
 
     // -------------------------------------------------------
 
-    public constructor(
+    protected constructor(
         public type : string,
     ) {super();}
+
+    public static getByName(name: string) : ColumnType | null {
+        if (name.startsWith('varchar(')) {
+            const match = name.match(/^varchar\((\d+)\)$/);
+            if (match) {
+                const num = parseInt(match[1], 10);
+                return this.VARCHAR(num);
+            }
+        }
+
+        switch (name) {
+            case 'json': return this.JSON;
+            case 'text': return this.TEXT;
+            case 'int': return this.INTEGER;
+            case 'datetime': return this.DATETIME;
+            case 'timestamp': return this.TIMESTAMP;
+            case 'date': return this.DATE;
+            case 'tinyint(1)': return this.BOOLEAN;
+            default: return null;
+        }
+
+    }
 
 }

@@ -4,7 +4,6 @@ import {QueryResult} from "../base/QueryResult";
 import {SelectQueryParams} from "../../interfaces/SelectQueryParams";
 import {Nothing} from "../../types/Nothing";
 import {ModelAdapter} from "../adapter/ModelAdapter";
-import {Database} from "../abstract/Database";
 import {DatabaseAPI} from "../base/DatabaseAPI";
 
 export class InformationSchema extends Module {

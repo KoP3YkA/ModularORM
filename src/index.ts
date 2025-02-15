@@ -22,6 +22,7 @@ export * from './classes/base/SqlFunctions';
 export * from './classes/base/SQLQueryBuilder';
 export * from './classes/base/UpdateBuilder';
 export * from './classes/base/WhereBuilder';
+export * from './classes/common/InformationSchemaColumns'
 
 // ---------- ADAPTERS ----------
 export * from './classes/adapter/ModelAdapter'
@@ -38,6 +39,7 @@ export * from './decorators/EventHandler';
 export * from './decorators/validators/factory/ValidatorFactory'
 export * from './decorators/validators/Validators'
 export * from './decorators/dto/Transform'
+export * from './decorators/Migration'
 
 // ---------- INTERFACES ----------
 export * from './interfaces/ColumnParams';
@@ -47,8 +49,6 @@ export * from './interfaces/SelectQueryParams'
 export * from './interfaces/Validate'
 
 // ---------- TYPES ----------
-export * from './types/Nothing';
-export * from './types/Or';
 export * from './types/QueryHandler'
 
 // ---------- NAMESPACES ----------
@@ -56,3 +56,4 @@ export * from './namespaces/DefaultColumn'
 
 // ---------- ENUMS ----------
 export * from './enums/QueryExecuteType'
+export * from './enums/MigrationType'

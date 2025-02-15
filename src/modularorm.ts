@@ -3,6 +3,7 @@ import {Nothing} from "./types/Nothing";
 import {DatabaseParams} from "./interfaces/DatabaseParams";
 import {Database} from "./classes/abstract/Database";
 import {DatabaseAPI} from "./classes/base/DatabaseAPI";
+import {DatabaseUpdate} from "./classes/base/DatabaseUpdate";
 
 /**
  * Main class for managing the ORM system.
@@ -26,6 +27,7 @@ export class ModularORM {
         await Database.connect(databaseParams);
         this.database = new DatabaseAPI();
         await Database.init();
+        await DatabaseUpdate.updateTables();
     }
 
     /**

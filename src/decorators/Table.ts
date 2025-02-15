@@ -1,6 +1,7 @@
 import {Database} from "../classes/abstract/Database";
 import 'reflect-metadata';
 import {SqlFunctions} from "../classes/base/SqlFunctions";
+import {System} from "../namespaces/System";
 
 /**
  * Table decorator.
@@ -52,6 +53,7 @@ export function Table(target: any) {
     const tableName = target.table;
 
     const createTableSQL = `CREATE TABLE IF NOT EXISTS ${tableName} (${columnsSQL});`;
+    System.TABLES_NAMES.set(target, tableName)
 
     Database.listTables.add(createTableSQL);
 }
