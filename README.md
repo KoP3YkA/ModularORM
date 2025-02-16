@@ -33,6 +33,7 @@ ModularORM is a powerful and flexible Object-Relational Mapping (ORM) library fo
 - [Validators list](#-validators-list)
 - [Custom validators](#-custom-validators)
 - [Events](#-events)
+- [Default columns](#-default-columns)
 
 ## ⛏️ Installation
 
