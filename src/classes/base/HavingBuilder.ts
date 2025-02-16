@@ -21,9 +21,9 @@ export class HavingBuilder extends BaseBuilder {
     /**
      * Adds a condition to the HAVING clause.
      *
-     * @param column - The name of the column to apply the condition to.
+     * @param column - The name of the default to apply the condition to.
      * @param operator - The comparison operator (e.g., '=', '>', 'LIKE').
-     * @param value - The value to compare the column to.
+     * @param value - The value to compare the default to.
      *
      * @returns The `HavingBuilder` instance for method chaining.
      */
@@ -37,9 +37,9 @@ export class HavingBuilder extends BaseBuilder {
     /**
      * Adds a condition with an AND logical operator to the HAVING clause.
      *
-     * @param column - The name of the column to apply the condition to.
+     * @param column - The name of the default to apply the condition to.
      * @param operator - The comparison operator (e.g., '=', '>', 'LIKE').
-     * @param value - The value to compare the column to.
+     * @param value - The value to compare the default to.
      *
      * @returns The `HavingBuilder` instance for method chaining.
      */
@@ -53,9 +53,9 @@ export class HavingBuilder extends BaseBuilder {
     /**
      * Adds a condition with an OR logical operator to the HAVING clause.
      *
-     * @param column - The name of the column to apply the condition to.
+     * @param column - The name of the default to apply the condition to.
      * @param operator - The comparison operator (e.g., '=', '>', 'LIKE').
-     * @param value - The value to compare the column to.
+     * @param value - The value to compare the default to.
      *
      * @returns The `HavingBuilder` instance for method chaining.
      */

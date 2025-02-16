@@ -5,20 +5,20 @@ import 'reflect-metadata'
 /**
  * Column decorator.
  * This decorator is used to define metadata for class properties that map to database columns.
- * It allows specifying column-specific parameters such as type, auto-increment, not-null, default value, uniqueness, indexing, and update behavior.
+ * It allows specifying default-specific parameters such as type, auto-increment, not-null, default value, uniqueness, indexing, and update behavior.
  *
  * The decorator stores this metadata for later use when generating SQL queries or interacting with the database.
  *
- * @param params - The column parameters, which include:
- * - `type`: The data type of the column (default: `ColumnType.VARCHAR`).
- * - `autoIncrement`: Whether the column value should auto-increment (default: `false`).
- * - `notNull`: Whether the column should be non-nullable (default: `false`).
- * - `defaultValue`: The default value for the column (default: `null`).
- * - `unique`: Whether the column should have a unique constraint (default: `false`).
- * - `index`: Whether the column should be indexed for faster querying (default: `false`).
- * - `onUpdate`: Defines the value to be set when the column is updated (default: `null`).
+ * @param params - The default parameters, which include:
+ * - `type`: The data type of the default (default: `ColumnType.VARCHAR`).
+ * - `autoIncrement`: Whether the default value should auto-increment (default: `false`).
+ * - `notNull`: Whether the default should be non-nullable (default: `false`).
+ * - `defaultValue`: The default value for the default (default: `null`).
+ * - `unique`: Whether the default should have a unique constraint (default: `false`).
+ * - `index`: Whether the default should be indexed for faster querying (default: `false`).
+ * - `onUpdate`: Defines the value to be set when the default is updated (default: `null`).
  *
- * @returns A property decorator that defines column metadata for the class property.
+ * @returns A property decorator that defines default metadata for the class property.
  */
 export function Column(params: Partial<ColumnParams>) {
     return function (target: any, propertyKey: string) {

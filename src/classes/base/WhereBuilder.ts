@@ -14,8 +14,8 @@ export class WhereBuilder extends BaseBuilder {
     }
 
     /**
-     * WHERE column = value AND...
-     * @param column - name of column
+     * WHERE default = value AND...
+     * @param column - name of default
      * @param value - equals value
      */
     public equalAnd(column: string, value: any): this {
@@ -26,8 +26,8 @@ export class WhereBuilder extends BaseBuilder {
     }
 
     /**
-     * WHERE column = value OR...
-     * @param column - name of column
+     * WHERE default = value OR...
+     * @param column - name of default
      * @param value - equals value
      */
     public equalOr(column: string, value: any): this {
@@ -38,8 +38,8 @@ export class WhereBuilder extends BaseBuilder {
     }
 
     /**
-     * WHERE column operator value AND...
-     * @param column - name of column
+     * WHERE default operator value AND...
+     * @param column - name of default
      * @param operator - equal operator (>, <, = and more...)
      * @param value - equals value
      */
@@ -51,8 +51,8 @@ export class WhereBuilder extends BaseBuilder {
     }
 
     /**
-     * WHERE column operator value OR...
-     * @param column - name of column
+     * WHERE default operator value OR...
+     * @param column - name of default
      * @param operator - equal operator (>, <, = and more...)
      * @param value - equals value
      */

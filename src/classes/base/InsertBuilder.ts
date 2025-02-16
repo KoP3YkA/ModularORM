@@ -3,14 +3,14 @@ import {Errors} from "./Errors";
 
 /**
  * Builder for constructing an INSERT SQL query.
- * This builder allows adding column-value pairs and provides a way to generate the appropriate SQL syntax for the query.
- * It supports both simple and separated column-value styles.
+ * This builder allows adding default-value pairs and provides a way to generate the appropriate SQL syntax for the query.
+ * It supports both simple and separated default-value styles.
  */
 export class InsertBuilder extends BaseBuilder {
 
     /**
      * Indicates whether to use a separated format for columns and values.
-     * When true, the query will specify column names explicitly (e.g., (column1, column2) VALUES (value1, value2)).
+     * When true, the query will specify default names explicitly (e.g., (column1, column2) VALUES (value1, value2)).
      * When false, the query will only include VALUES (value1, value2).
      */
     public separated : boolean;
@@ -27,9 +27,9 @@ export class InsertBuilder extends BaseBuilder {
     }
 
     /**
-     * Adds a column-value pair to the INSERT query.
-     * @param column - The name of the column to insert the value into.
-     * @param value - The value to be inserted into the specified column.
+     * Adds a default-value pair to the INSERT query.
+     * @param column - The name of the default to insert the value into.
+     * @param value - The value to be inserted into the specified default.
      * @returns The current InsertBuilder instance for method chaining.
      */
     public add(column: string, value: any): this {

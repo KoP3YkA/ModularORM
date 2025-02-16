@@ -39,6 +39,7 @@ export * from './decorators/EventHandler';
 export * from './decorators/validators/factory/ValidatorFactory'
 export * from './decorators/validators/Validators'
 export * from './decorators/dto/Transform'
+export * from './decorators/dto/TransformFactory'
 export * from './decorators/Migration'
 
 // ---------- INTERFACES ----------

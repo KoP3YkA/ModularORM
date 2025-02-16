@@ -18,7 +18,7 @@ export class SelectBuilder extends BaseBuilder {
     }
 
     /**
-     * Add column name to selects
+     * Add default name to selects
      * @param name
      */
     public addColumn(name: string) : SelectBuilder {
@@ -37,7 +37,7 @@ export class SelectBuilder extends BaseBuilder {
     }
 
     /**
-     * Sum of returned column values
+     * Sum of returned default values
      * @param column
      * @param as
      */
@@ -47,7 +47,7 @@ export class SelectBuilder extends BaseBuilder {
     }
 
     /**
-     * Returns the average of the specified column
+     * Returns the average of the specified default
      * @param column
      * @param as
      */
@@ -57,7 +57,7 @@ export class SelectBuilder extends BaseBuilder {
     }
 
     /**
-     * Returns the minimum value in the specified column.
+     * Returns the minimum value in the specified default.
      * @param column
      * @param as
      */
@@ -67,7 +67,7 @@ export class SelectBuilder extends BaseBuilder {
     }
 
     /**
-     * Returns the maximum value in the specified column.
+     * Returns the maximum value in the specified default.
      * @param column
      * @param as
      */

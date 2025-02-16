@@ -112,7 +112,7 @@ export class SQLQueryBuilder {
             values = [...values, ...where.getValues()];
         }
 
-        // #----------- ORDER BY column DESC -----------#
+        // #----------- ORDER BY default DESC -----------#
         if (builder.desc) {
             sql += ` ORDER BY ${builder.desc} DESC`
         }
@@ -122,7 +122,7 @@ export class SQLQueryBuilder {
             sql += ` LIMIT ${builder.limit}`
         }
 
-        // #----------- GROUP BY column -----------#
+        // #----------- GROUP BY default -----------#
         if (builder.group) {
             sql += ` GROUP BY ${builder.group}`
         }

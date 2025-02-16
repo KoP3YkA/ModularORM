@@ -80,8 +80,8 @@ export class QueryBuilder extends BaseBuilder {
     }
 
     /**
-     * Sets the ORDER BY clause with descending order for a specific column.
-     * @param column - The name of the column to order by in descending order.
+     * Sets the ORDER BY clause with descending order for a specific default.
+     * @param column - The name of the default to order by in descending order.
      * @returns The current QueryBuilder instance.
      */
     public setDesc(column: string) : QueryBuilder {
@@ -101,7 +101,7 @@ export class QueryBuilder extends BaseBuilder {
 
     /**
      * Specifies a GROUP BY clause for the query.
-     * @param column - The name of the column to group by.
+     * @param column - The name of the default to group by.
      * @returns The current QueryBuilder instance.
      */
     public setGroup(column: string) : QueryBuilder {
