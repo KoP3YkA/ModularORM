@@ -41,6 +41,8 @@ export * from './decorators/validators/Validators'
 export * from './decorators/dto/Transform'
 export * from './decorators/dto/TransformFactory'
 export * from './decorators/Migration'
+export * from './decorators/default/AutoIncrementId'
+export * from './decorators/default/ColumnAnnotationFabric'
 
 // ---------- INTERFACES ----------
 export * from './interfaces/ColumnParams';

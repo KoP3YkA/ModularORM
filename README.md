@@ -81,8 +81,6 @@ class TestTable extends Module {
 But let's simplify the code using features!
 
 ```typescript
-import {AutoIncrementId} from "./AutoIncrementId";
-
 @Table
 @NamedTable('ur_table_name') // Automatically determines the table name without the need to override the method
 class TestTable extends Module {
