@@ -35,8 +35,8 @@ export class InsertBuilder extends BaseBuilder {
     public add(column: string, value: any): this {
         let validValue : any = value;
         if (typeof value === 'object' && value !== null) validValue = JSON.stringify(value)
-        if (value instanceof Date) validValue = `${validValue.getFullYear()}-${String(validValue.getMonth() + 1).padStart(2, "0")}-${String(validValue.getDate()).padStart(2, "0")} ` +
-            `${String(validValue.getHours()).padStart(2, "0")}:${String(validValue.getMinutes()).padStart(2, "0")}:${String(validValue.getSeconds()).padStart(2, "0")}`;
+        if (value instanceof Date) validValue = `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}-${String(value.getDate()).padStart(2, "0")} ` +
+            `${String(value.getHours()).padStart(2, "0")}:${String(value.getMinutes()).padStart(2, "0")}:${String(value.getSeconds()).padStart(2, "0")}`;
         this.values.set(column, validValue);
         return this;
     }
