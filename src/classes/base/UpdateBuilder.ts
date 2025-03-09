@@ -24,7 +24,10 @@ export class UpdateBuilder extends BaseBuilder {
      */
     public add(column: string, value: any) : this {
         this.updates.push(`${column} = ?`);
-        this.values.push(value);
+        let validValue = value;
+        if (value instanceof Date) validValue = `${validValue.getFullYear()}-${String(validValue.getMonth() + 1).padStart(2, "0")}-${String(validValue.getDate()).padStart(2, "0")} ` +
+            `${String(validValue.getHours()).padStart(2, "0")}:${String(validValue.getMinutes()).padStart(2, "0")}:${String(validValue.getSeconds()).padStart(2, "0")}`;
+        this.values.push(validValue);
         return this;
     }
 

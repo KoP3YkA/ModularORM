@@ -1,6 +1,6 @@
 {
   "name": "modular-orm",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "A simple ORM library for TypeScript that allows you to work with the database using classes",
   "repository": {
     "url": "git+https://github.com/KoP3YkA/ModularORM.git"
@@ -10,7 +10,8 @@
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "tsup"
+    "build": "tsup",
+    "test": "jest"
   },
   "keywords": [
     "orm",
@@ -21,6 +22,8 @@
   "author": "kop3yka",
   "license": "MIT",
   "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "ts-jest": "^29.2.5",
     "tsup": "^8.3.6",
     "typescript": "^5.7.3"
   },
