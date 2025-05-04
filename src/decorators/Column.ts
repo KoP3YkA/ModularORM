@@ -22,7 +22,7 @@ import 'reflect-metadata'
  */
 export function Column(params: Partial<ColumnParams>) {
     return function (target: any, propertyKey: string) {
-        const existingColumns = Reflect.getMetadata("columns", target) || [];
+        const existingColumns = Reflect.getMetadata("columns", target.constructor) || [];
 
         existingColumns.push({
             propertyKey,
@@ -38,6 +38,22 @@ export function Column(params: Partial<ColumnParams>) {
             }
         });
 
-        Reflect.defineMetadata("columns", existingColumns, target);
+        Reflect.defineMetadata("columns", existingColumns, target.constructor);
+
+        const columnMappings =
+            Reflect.getMetadata("resultAnnotations-mapping-list", target) || [];
+
+        columnMappings.push({ propertyKey, columnName: propertyKey });
+        Reflect.defineMetadata(
+            "resultAnnotations-mapping-list",
+            columnMappings,
+            target
+        );
+        Reflect.defineMetadata(
+            "resultAnnotations-mapping",
+            propertyKey,
+            target,
+            propertyKey
+        );
     };
 }

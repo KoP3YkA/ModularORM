@@ -93,31 +93,33 @@ export class FinalQuery {
 
         const res = dbResult.map(row => {
             let resultInstance = new ctor();
-            for (const property of Object.keys(resultInstance)) {
-                const prototype = Object.getPrototypeOf(resultInstance);
-                const columnName = Reflect.getMetadata('resultAnnotations-mapping', prototype, property);
+            const prototype = ctor.prototype;
+            const columnMappings: Array<{ propertyKey: string; columnName: string }> =
+                Reflect.getMetadata('resultAnnotations-mapping-list', prototype) || [];
+
+            for (const { propertyKey, columnName } of columnMappings) {
                 if (!columnName || !row.hasOwnProperty(columnName)) continue;
 
                 let entryResult = row[columnName];
 
                 if (System.TRANSFORMS.has(resultInstance.constructor)) {
                     const results = System.TRANSFORMS.get(resultInstance.constructor) as Map<string, (value: any) => any>
-                    const thisColumnResult = results.get(property)
+                    const thisColumnResult = results.get(propertyKey)
                     if (thisColumnResult) entryResult = thisColumnResult(entryResult)
                 }
 
-                (resultInstance as any)[property] = entryResult;
+                (resultInstance as any)[propertyKey] = entryResult;
 
                 if (!System.VALIDATORS.has(resultInstance.constructor)) continue;
                 const results : Set<Map<string, {func: (value: any, column: string) => boolean, message: string}>> = System.VALIDATORS.get(resultInstance.constructor) as Set<Map<string, {func: (value: any, column: string) => boolean, message: string}>>;
 
-                const thisColumnValidators : (Map<string, {func: (value: any, column: string) => boolean, message: string}>)[] = Array.from(results).filter(obj => obj.get(property))
+                const thisColumnValidators : (Map<string, {func: (value: any, column: string) => boolean, message: string}>)[] = Array.from(results).filter(obj => obj.get(propertyKey))
                 if (thisColumnValidators.length < 1) continue;
 
                 thisColumnValidators.forEach(obj => {
-                    const validatorFunc = obj.get(property)
+                    const validatorFunc = obj.get(propertyKey)
 
-                    if (validatorFunc && validatorFunc.func && !validatorFunc.func(entryResult, property)) {
+                    if (validatorFunc && validatorFunc.func && !validatorFunc.func(entryResult, propertyKey)) {
                         const instanceErrors = (resultInstance as any)['validateErrors']
                         if (instanceErrors instanceof Set) {
                             instanceErrors.add(validatorFunc.message)

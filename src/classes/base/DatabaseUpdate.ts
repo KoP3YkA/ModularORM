@@ -1,3 +1,4 @@
+import 'reflect-metadata'
 import {Nothing} from "../../types/Nothing";
 import {System} from "../../namespaces/System";
 import {InformationSchemaColumns, InformationSchemaColumnsResult} from "../common/InformationSchemaColumns";
@@ -7,6 +8,7 @@ import {MigrationType} from "../../enums/MigrationType";
 import {DatabaseAPI} from "./DatabaseAPI";
 import {SqlFunctions} from "./SqlFunctions";
 
+
 type ColumnT = { name: string, type: ColumnType };
 type ORMColumn = { autoIncrement: boolean, defaultValue: any, notNull: boolean, unique: boolean, index: boolean, onUpdate: any };
 
@@ -14,7 +16,7 @@ export class DatabaseUpdate {
 
     public static async updateTables() : Nothing {
         for (const i of System.TABLES_NAMES.keys()) {
-            const columns = Reflect.getMetadata("columns", i.prototype) || []
+            const columns = Reflect.getMetadata("columns", i.constructor) || []
 
             const results : InformationSchemaColumnsResult[] = await InformationSchemaColumns.select({
                 TABLE_SCHEMA: (System.DATABASE_CONNECTION_DATA as DatabaseParams).database,

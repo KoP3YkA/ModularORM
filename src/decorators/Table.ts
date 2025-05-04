@@ -14,7 +14,7 @@ import {System} from "../namespaces/System";
  * @param target - The class to which this decorator is applied. It should have a static `table` property that defines the table name.
  */
 export function Table(target: any) {
-    const columns = Reflect.getMetadata("columns", target.prototype) || [];
+    const columns = Reflect.getMetadata("columns", target) || [];
 
     const columnsSQL = columns.map((column: any) => {
         const { propertyKey, params } = column;

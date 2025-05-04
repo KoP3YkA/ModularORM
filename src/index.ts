@@ -23,6 +23,7 @@ export * from './classes/base/SQLQueryBuilder';
 export * from './classes/base/UpdateBuilder';
 export * from './classes/base/WhereBuilder';
 export * from './classes/common/InformationSchemaColumns'
+export * from './classes/base/Repository'
 
 // ---------- ADAPTERS ----------
 export * from './classes/adapter/ModelAdapter'
