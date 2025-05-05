@@ -51,6 +51,7 @@ export * from './interfaces/DatabaseParams';
 export * from './interfaces/Query';
 export * from './interfaces/SelectQueryParams'
 export * from './interfaces/Validate'
+export * from './interfaces/StartParams'
 
 // ---------- TYPES ----------
 export * from './types/QueryHandler'

@@ -2,6 +2,8 @@ import {Database} from "../abstract/Database";
 import {Nothing} from "../../types/Nothing";
 import {FieldPacket} from "mysql2";
 import {Query} from "../../interfaces/Query";
+import {Logger} from "../Logger";
+import chalk from "chalk";
 
 export class DatabaseAPI extends Database {
 
@@ -15,7 +17,11 @@ export class DatabaseAPI extends Database {
      * @returns Nothing (Promise<void>).
      */
     public async databaseSetQuery(params: Query) : Nothing {
-        await DatabaseAPI.connection.query(params.sql, params.params);
+        try {
+            await DatabaseAPI.connection.query(params.sql, params.params);
+        } catch (err) {
+            Logger.error(chalk.red(`Error when executing SET query:\n${err}`))
+        }
         (await DatabaseAPI.connection.getConnection()).release()
     }
 
@@ -25,7 +31,14 @@ export class DatabaseAPI extends Database {
      * @returns An array of rows returned by the query.
      */
     public async databaseGetQuery(params: Query) : Promise<any[]> {
-        const [rows, fields]: [any[], FieldPacket[]] = await DatabaseAPI.connection.query(params.sql, params.params);
+        let rows : any[] = [];
+        let fields: any[] = [];
+        try {
+            [rows, fields] = await DatabaseAPI.connection.query(params.sql, params.params);
+        } catch (err) {
+            Logger.error(chalk.red(`Error when executing GET query:\n${err}`))
+            return [];
+        }
         (await DatabaseAPI.connection.getConnection()).release()
         return rows as any[];
     }

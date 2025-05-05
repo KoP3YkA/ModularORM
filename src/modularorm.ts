@@ -4,6 +4,8 @@ import {DatabaseParams} from "./interfaces/DatabaseParams";
 import {Database} from "./classes/abstract/Database";
 import {DatabaseAPI} from "./classes/base/DatabaseAPI";
 import {DatabaseUpdate} from "./classes/base/DatabaseUpdate";
+import {StartParams} from "./interfaces/StartParams";
+import {Settings} from "./classes/base/Settings";
 
 /**
  * Main class for managing the ORM system.
@@ -23,7 +25,13 @@ export class ModularORM {
      * @param databaseParams - The parameters required to connect to the database.
      * @returns Nothing.
      */
-    public async start(databaseParams: DatabaseParams) : Nothing {
+    public async start(databaseParams: StartParams) : Nothing {
+        if (typeof databaseParams.validationErrors === 'boolean') Settings.validationErrors = databaseParams.validationErrors;
+        else Settings.validationErrors = false;
+
+        if (typeof databaseParams.logs === 'boolean') Settings.logs = databaseParams.logs;
+        else Settings.logs = true;
+
         await Database.connect(databaseParams);
         this.database = new DatabaseAPI();
         await Database.init();
