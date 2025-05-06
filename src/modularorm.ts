@@ -20,6 +20,11 @@ export class ModularORM {
 
     private constructor() {}
 
+    private pickDatabaseParams(params: StartParams): DatabaseParams {
+        const { host, port, user, password, database } = params;
+        return { host, port, user, password, database };
+    }
+
     /**
      * Establishes a connection to the database and initializes the ORM system.
      * @param databaseParams - The parameters required to connect to the database.
@@ -32,7 +37,7 @@ export class ModularORM {
         if (typeof databaseParams.logs === 'boolean') Settings.logs = databaseParams.logs;
         else Settings.logs = true;
 
-        await Database.connect(databaseParams);
+        await Database.connect(this.pickDatabaseParams(databaseParams));
         this.database = new DatabaseAPI();
         await Database.init();
         await DatabaseUpdate.updateTables();
