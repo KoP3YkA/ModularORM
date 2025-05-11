@@ -26,7 +26,21 @@ export abstract class Database {
 
         // ----------------------------
         const regex = /CREATE TABLE IF NOT EXISTS\s+([^\s(]+)/i;
-        for (const query of Database.listTables) {
+
+        const sortedQueries = [...Database.listTables].sort((a, b) => {
+            const tableA = a.match(regex);
+            const tableB = b.match(regex);
+
+            const tableNameA = tableA ? tableA[1] : 'UNKNOWN';
+            const tableNameB = tableB ? tableB[1] : 'UNKNOWN';
+
+            const priorityA = System.TABLES_PRIORITY.get(tableNameA) || 0;
+            const priorityB = System.TABLES_PRIORITY.get(tableNameB) || 0;
+
+            return priorityB - priorityA;
+        });
+
+        for (const query of sortedQueries) {
             const match = query.match(regex);
             const tableName = match ? match[1] : 'UNKNOWN';
             try {

@@ -34,7 +34,10 @@ export function Column(params: Partial<ColumnParams>) {
                 defaultValue: params.defaultValue !== undefined ? params.defaultValue : null,
                 unique: params.unique || false,
                 index: params.index || false,
-                onUpdate: params.onUpdate !== undefined ? params.onUpdate : null
+                onUpdate: params.onUpdate !== undefined ? params.onUpdate : null,
+                foreignKey: params.foreignKey || false,
+                onDeleteForeign: params.onDeleteForeign || false,
+                onUpdateForeign: params.onUpdateForeign || false,
             }
         });
 

@@ -1,7 +1,7 @@
-export interface SelectQueryParams {
+export interface SelectQueryParams<T extends string = string> {
 
     limit: number;
     offset: number;
-    order: string;
+    order: T;
 
 }

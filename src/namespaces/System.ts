@@ -22,5 +22,6 @@ export namespace System {
     export const TRANSFORMS : Map<Object, Map<string, (value: any) => any>> = new Map();
     export const MIGRATION_TABLES : Map<Function, Set<MigrationType>> = new Map()
     export let DATABASE_CONNECTION_DATA : DatabaseParams;
+    export const TABLES_PRIORITY : Map<string, number> = new Map()
 
 }

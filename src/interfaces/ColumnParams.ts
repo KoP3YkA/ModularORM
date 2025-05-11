@@ -55,6 +55,40 @@ export interface ColumnParams {
      * Defines the value to be set when the default is updated. Commonly used for timestamp fields (e.g., `onUpdate: 'CURRENT_TIMESTAMP'`).
      * This value will be automatically applied when the default is updated.
      */
-    onUpdate: any
+    onUpdate: any,
+
+    /**
+     * Defines the foreign key relationship for this column.
+     * If this property is specified, the column will be a foreign key referencing another table.
+     *
+     * `referencedTable`: The name of the table that this column references.
+     * `referencedColumn`: The name of the column in the referenced table that this column refers to.
+     *
+     * Foreign keys help maintain data integrity by ensuring that a value in this column must exist in the referenced table.
+     */
+    foreignKey: {
+        referencedTable: string;        // The name of the table that this column references
+        referencedColumn: string;       // The name of the column in the referenced table
+    };
+
+    /**
+     * Specifies the behavior when a referenced row is deleted in the parent table.
+     * This value will only be used if the column is a foreign key.
+     * Possible values:
+     * - "CASCADE": Automatically delete rows that reference the deleted row.
+     * - "SET NULL": Set the foreign key column to NULL when the referenced row is deleted.
+     * - "RESTRICT": Prevent the deletion of the referenced row if there are dependent rows in this table.
+     */
+    onDeleteForeign: "CASCADE" | "SET NULL" | "RESTRICT";
+
+    /**
+     * Specifies the behavior when a referenced row is updated in the parent table.
+     * This value will only be used if the column is a foreign key.
+     * Possible values:
+     * - "CASCADE": Automatically update rows that reference the updated row.
+     * - "SET NULL": Set the foreign key column to NULL when the referenced row is updated.
+     * - "RESTRICT": Prevent the update of the referenced row if there are dependent rows in this table.
+     */
+    onUpdateForeign: "CASCADE" | "SET NULL" | "RESTRICT";
 
 }

@@ -13,12 +13,12 @@ export class Repository<T extends Module, B extends QueryResult> {
         await new ModelAdapter(this.moduleClass).create(values);
     }
 
-    public async findOne(values: Partial<T> = {}, params?: Partial<SelectQueryParams>) : Promise<B | null> {
+    public async findOne(values: Partial<T> = {}, params?: Partial<SelectQueryParams<Extract<keyof T, string>>>) : Promise<B | null> {
         const response : B[] = await new ModelAdapter(this.moduleClass).select(this.resultClass, values, {limit: 1, ...params});
         return response.length === 0 ? null : response[0];
     }
 
-    public async find(values: Partial<T> = {}, params?: Partial<SelectQueryParams>) : Promise<B[]> {
+    public async find(values: Partial<T> = {}, params?: Partial<SelectQueryParams<Extract<keyof T, string>>>) : Promise<B[]> {
         return await new ModelAdapter(this.moduleClass).select(this.resultClass, values, params);
     }
 
