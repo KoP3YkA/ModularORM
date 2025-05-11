@@ -1,4 +1,3 @@
-import {Singleton} from "./decorators/Singleton";
 import {Nothing} from "./types/Nothing";
 import {DatabaseParams} from "./interfaces/DatabaseParams";
 import {Database} from "./classes/abstract/Database";
@@ -12,7 +11,6 @@ import {Settings} from "./classes/base/Settings";
  * Implements the Singleton pattern to ensure a single instance of the class.
  * @decorators Singleton
  */
-@Singleton
 export class ModularORM {
 
     private static instance : ModularORM;
@@ -35,7 +33,7 @@ export class ModularORM {
         else Settings.validationErrors = false;
 
         if (typeof databaseParams.logs === 'boolean') Settings.logs = databaseParams.logs;
-        else Settings.logs = true;
+        else Settings.logs = false;
 
         await Database.connect(this.pickDatabaseParams(databaseParams));
         this.database = new DatabaseAPI();

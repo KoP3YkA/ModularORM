@@ -5,7 +5,7 @@ ModularORM is a powerful and flexible Object-Relational Mapping (ORM) library fo
 ### Features
 
 - **Dynamic Query Builder:** Build and execute SQL queries dynamically with classes like ``InsertBuilder``, ``UpdateBuilder``, ``SelectBuilder``, and more.
-- **Table Mapping:** Easily map TypeScript classes to database tables using decorators like ``@Table`` and ``@Column``.
+- **Table Mapping:** Easily map TypeScript classes to database tables using decorators like ``@Table()`` and ``@Column``.
 - **Column Types:** Use predefined column types (e.g., ``ColumnType.INTEGER``, ``ColumnType.VARCHAR(number)``) or extend them as needed.
 - **Custom SQL Functions:** Includes predefined functions like ``CURRENT_TIMESTAMP``, ``UUID()``, and ``RAND()``. Create complex SQL expressions with ``SqlFunctions``.
 - **Query Results Mapping:** Automatically map query results to TypeScript class instances with ``@Result`` decorator.
@@ -53,7 +53,7 @@ Check your libraries with `npm ls` to make sure `mysql2` and `reflect-metadata` 
 ### 🪄 Creating a new table
 To create a new table, you need to create a class that extends `Module`, add the `Table` annotation, and define the columns:
 ```typescript
-@Table
+@Table()
 class TestTable extends Module {
     
     @Column({
@@ -81,11 +81,11 @@ class TestTable extends Module {
 But let's simplify the code using features!
 
 ```typescript
-@Table
+@Table()
 @NamedTable('ur_table_name') // Automatically determines the table name without the need to override the method
 class TestTable extends Module {
 
-    @AutoIncrementId // This annotation indicates that the column is an auto-incrementing ID.
+    @AutoIncrementId() // This annotation indicates that the column is an auto-incrementing ID.
     public id: number = 0;
 
     @Column(DefaultColumn.VARCHAR_UUID) // This namespace contains predefined column templates
@@ -120,7 +120,8 @@ await database.start({
     user: 'ur_user',
     password: 'ur_password',
     database: 'ur_database_name',
-    port: 3306 // Or any
+    port: 3306, // Or any
+    logs: true // You can enable logging
 });
 ```
 
@@ -153,7 +154,7 @@ await builder.build().execute(); // The execute method executes the SQL query wi
 Now, let's simplify the code by adding `ModuleAdapter` to our table:
 
 ```typescript
-@Table
+@Table()
 @NamedTable('ur_table_name')
 class TestTable extends Module {
     
@@ -248,7 +249,7 @@ const results : TestResult[] = await builder.build().get(TestResult)
 Using `ModuleAdapter`:
 
 ```typescript
-@Table
+@Table()
 @NamedTable('ur_table_name')
 class TestTable extends Module {
     
@@ -299,7 +300,7 @@ await build.build().execute() // Use #execute method
 Using `ModuleAdapter`:
 
 ```typescript
-@Table
+@Table()
 @NamedTable('ur_table_name')
 class TestTable extends Module {
     
@@ -354,7 +355,7 @@ await new DatabaseAPI().databaseSetQuery({
 As mentioned earlier, the library supports automatic table updates. Currently, only column updates are supported (adding them to the database and removing them accordingly). Let's assume you initially created a table and used it for a month:
 
 ```typescript
-@Table
+@Table()
 @NamedTable('api_keys')
 export class ApiKeysModule extends Module {
     
@@ -376,7 +377,7 @@ export class ApiKeysModule extends Module {
 But you needed to add another column:
 
 ```typescript
-@Table
+@Table()
 @NamedTable('api_keys')
 export class ApiKeysModule extends Module {
     
@@ -401,7 +402,7 @@ export class ApiKeysModule extends Module {
 What should you do in this case? Manually add the column? No, you can add the `Migration` annotation, specifying `MigrationType.COLUMNS`:
 
 ```typescript
-@Table
+@Table()
 @NamedTable('api_keys')
 @Migration(MigrationType.COLUMNS)
 export class ApiKeysModule extends Module {
@@ -431,7 +432,7 @@ Next time the application runs, ModularORM will notice that the columns in the M
 `ModularORM` supports standard SQL functions. For example, if you need a `TIMESTAMP` column that will automatically update its value when modified, you can do it like this:
 
 ```typescript
-@Table
+@Table()
 @NamedTable('ur_table_name')
 export class TestTable extends Module {
     
@@ -593,7 +594,7 @@ export const IsValidCustomClass = ValidatorFactory.createValidator(
 When creating a database query using the library, ModularORM generates events that you can handle directly in the methods of your `Module`. This can be done using the `EventHandler` annotation, which creates routing to your method. When an event is triggered, the `QueryHandler` interface will be passed to your method. Events *(like any other user-defined functions supported by the library)* can be asynchronous.
 
 ```typescript
-@Table
+@Table()
 @NamedTable('ur_table_name')
 class TestTable extends Module {
 
@@ -652,3 +653,19 @@ Below is a list of all elements of `DefaultColumn`.
 | LONG_VARCHAR       |            VARCHAR(255) NOT NULL            |
 | TEXT               |                TEXT NOT NULL                |
 | JSON               |                JSON NOT NULL                |
+
+### 📁 Repository
+
+The `Repository` class is a generic data access layer that simplifies CRUD (Create, Read, Update, Delete) operations and custom SQL queries on a given data module.
+
+```typescript
+const usersRepository: Repository<UserModule, UserQueryResult> = new Repository(UserModule, UserQueryResult);
+
+const response : UserQueryResult | null = await usersRepository.findOne({ user_id: '123' }, { order: 'id' }); // SELECT * FROM users WHERE userId = '123' ORDER BY id DESC
+
+const allResponse : UserQueryResult[] = await usersRepository.find(); // SELECT * FORM users
+
+await usersRepository.insert({ userId: '124', name: 'John' });
+```
+
+This design is intended for Dependency Injection in your code and strict typing when constructing queries since Repository uses `Partial<Module>` for `WHERE` and `INSERT` blocks.
