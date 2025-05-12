@@ -34,6 +34,9 @@ ModularORM is a powerful and flexible Object-Relational Mapping (ORM) library fo
 - [Custom validators](#-custom-validators)
 - [Events](#-events)
 - [Default columns](#-default-columns)
+- [Repository pattern](#-repository)
+- [QueryIs](#-queryis-class)
+- [About caching](#-about-caching)
 
 ## ⛏️ Installation
 
@@ -86,10 +89,10 @@ But let's simplify the code using features!
 class TestTable extends Module {
 
     @AutoIncrementId() // This annotation indicates that the column is an auto-incrementing ID.
-    public id: number = 0;
+    public id!: number;
 
     @Column(DefaultColumn.VARCHAR_UUID) // This namespace contains predefined column templates
-    public userId: string = "";
+    public userId!: string;
 
 }
 ```
@@ -121,7 +124,18 @@ await database.start({
     password: 'ur_password',
     database: 'ur_database_name',
     port: 3306, // Or any
-    logs: true // You can enable logging
+    // Enables query logs
+    logs: true,
+    // Automatically creates the required entities
+    entities: [],
+    // Outputs a log to the console about invalid validation, removing invalid DTOs from the results array
+    validationErrors: true,
+    // Maximum cache size
+    maxMemoryUsageMB: 50,
+    // Method for calculating cache size (either process.memoryUsage or JSON.stringify size)
+    cacheSizeEstimationType: 'approximate',
+    // Or you can turn off the cache altogether
+    useCache: false
 });
 ```
 
@@ -153,16 +167,18 @@ await builder.build().execute(); // The execute method executes the SQL query wi
 
 Now, let's simplify the code by adding `ModuleAdapter` to our table:
 
+> ⚠️ It is better to use the [Repository pattern](#-repository)
+
 ```typescript
 @Table()
 @NamedTable('ur_table_name')
 class TestTable extends Module {
     
     @Column(DefaultColumn.AUTOINCREMENT_ID)
-    public id : number = 0;
+    public id!: number;
     
     @Column(DefaultColumn.VARCHAR_UUID)
-    public userId : string = "";
+    public userId!: string;
     
     // U can use arrow-functions
     public static async create(values: { [key: string]: any }) : Promise<any> {
@@ -190,12 +206,12 @@ To retrieve data from the database, you need to create a result class that exten
 class TestResult extends QueryResult {
     
     @Column('id') // // Specify this annotation for each parameter.
-    public autoId : number = 0;
+    public autoId!: number;
 
     // You can also omit specifying the column name explicitly
     // if it matches the parameter name.
     @Column()
-    public userId : string = "";
+    public userId!: string;
     
 }
 ```
@@ -241,6 +257,11 @@ const builder : QueryBuilder = new QueryBuilder()
         new HavingBuilder()
             .and('column', 'operator (<, > and more)', 'value')
     )
+    // You can set a cache lifetime if it is enabled.
+    .setCacheTTL(200) // 200 sec
+    // Or turn off the cache altogether
+    .setUseCache(false)
+    // Note: cache works only in SELECT queries
 
 // You can retrieve the values as an array of your QueryResult objects.
 const results : TestResult[] = await builder.build().get(TestResult)
@@ -254,12 +275,13 @@ Using `ModuleAdapter`:
 class TestTable extends Module {
     
     @Column(DefaultColumn.AUTOINCREMENT_ID)
-    public id : number = 0;
+    public id!: number;
     
     @Column(DefaultColumn.VARCHAR_UUID)
-    public userId : string = "";
+    public userId!: string;
     
     // Or use arrow-functions
+    // Again, we remind you that it is better to use Repository
     public static async select(
         where: { [key: string] : any }, 
         params?: Partial<SelectQueryParams>
@@ -305,10 +327,10 @@ Using `ModuleAdapter`:
 class TestTable extends Module {
     
     @Column(DefaultColumn.AUTOINCREMENT_ID)
-    public id : number = 0;
+    public id!: number;
     
     @Column(DefaultColumn.VARCHAR_UUID)
-    public userId : string = "";
+    public userId!: string;
     
     // Or use arrow-functions
     public static async update(
@@ -352,6 +374,8 @@ await new DatabaseAPI().databaseSetQuery({
 
 ### 🔄 Automatic Table Updates
 
+> ⚠️ As of version 0.2.2 this feature is in Beta and is best not used.
+
 As mentioned earlier, the library supports automatic table updates. Currently, only column updates are supported (adding them to the database and removing them accordingly). Let's assume you initially created a table and used it for a month:
 
 ```typescript
@@ -360,16 +384,16 @@ As mentioned earlier, the library supports automatic table updates. Currently, o
 export class ApiKeysModule extends Module {
     
     @Column(DefaultColumn.AUTOINCREMENT_ID)
-    public id : number = 0;
+    public id!: number;
     
     @Column(DefaultColumn.LONG_VARCHAR)
-    public key : string = "";
+    public key!: string;
     
     @Column(DefaultColumn.DATETIME)
-    public expiresIn : Date = new Date();
+    public expiresIn!: Date;
     
     @Column(DefaultColumn.TEXT)
-    public scopes : string = "";
+    public scopes!: string;
     
 }
 ```
@@ -382,19 +406,19 @@ But you needed to add another column:
 export class ApiKeysModule extends Module {
     
     @Column(DefaultColumn.AUTOINCREMENT_ID)
-    public id : number = 0;
+    public id!: number;
     
     @Column(DefaultColumn.LONG_VARCHAR)
-    public key : string = "";
+    public key!: string;
     
     @Column(DefaultColumn.DATETIME)
-    public expiresIn : Date = new Date();
+    public expiresIn!: Date;
     
     @Column(DefaultColumn.TEXT)
-    public scopes : string = "";
+    public scopes!: string;
     
     @Column(DefaultColumn.BOOL_DEFAULT_FALSE)
-    public isBanned : boolean = false;
+    public isBanned!: boolean;
     
 }
 ```
@@ -408,19 +432,19 @@ What should you do in this case? Manually add the column? No, you can add the `M
 export class ApiKeysModule extends Module {
     
     @Column(DefaultColumn.AUTOINCREMENT_ID)
-    public id : number = 0;
+    public id!: number;
     
     @Column(DefaultColumn.LONG_VARCHAR)
-    public key : string = "";
+    public key!: string;
     
     @Column(DefaultColumn.DATETIME)
-    public expiresIn : Date = new Date();
+    public expiresIn!: Date;
     
     @Column(DefaultColumn.TEXT)
-    public scopes : string = "";
+    public scopes!: string;
     
     @Column(DefaultColumn.BOOL_DEFAULT_FALSE)
-    public isBanned : boolean = false;
+    public isBanned!: boolean;
     
 }
 ```
@@ -515,7 +539,7 @@ class TestResult extends QueryResult {
     
     @Result()
     @ToUnique
-    public id : symbol = Symbol(" ")
+    public id!: symbol;
     
 }
 ```
@@ -531,11 +555,11 @@ class TestResult extends QueryResult implements Validate {
     
     @Result()
     @IsNumber // Checks that the value is a number.
-    public id : number = 0;
+    public id!: number;
     
     @Result()
     @IsInArray('123', '124', '125') // Checks if the value exists in the provided REST array.
-    public userId : string = "";
+    public userId!: string;
 
     // For example, if id is not a number, an error message will appear here.
     public validateErrors : Set<string> = new Set();
@@ -599,7 +623,7 @@ When creating a database query using the library, ModularORM generates events th
 class TestTable extends Module {
 
     @Column(DefaultColumn.AUTOINCREMENT_ID)
-    public someParam: number = 0;
+    public someParam!: number;
 
     @EventHandler
     public logger(params: QueryHandler): void {
@@ -669,3 +693,42 @@ await usersRepository.insert({ userId: '124', name: 'John' });
 ```
 
 This design is intended for Dependency Injection in your code and strict typing when constructing queries since Repository uses `Partial<Module>` for `WHERE` and `INSERT` blocks.
+
+### ⚖️ QueryIs Class
+
+This class is needed to create custom WHERE queries that cannot be created due to Repository limitations.
+It works very simply: when QueryIs is encountered in the WHERE block, the contents of the object are placed after the column name in the SQL query.
+For example, if the object's content is "IS NULL", then "columnName = 123" will be replaced with "columnName IS NULL"
+
+```typescript
+@Table()
+@NamedTable('test_tab')
+export class TestTable extends Module {
+
+    @AutoIncrementId()
+    id!: number;
+
+    @Column({ type: ColumnType.VARCHAR(64), index: true, notNull: true })
+    user_id!: string;
+
+    @Column({ type: ColumnType.DATETIME, index: true })
+    deletedAt!: Date | QueryIs;
+
+}
+
+const repository = new Repository(TestTable, TestResult);
+await repository.find({ deletedAt: QueryIs.NOT_NULL }) // SELECT * FROM test_tab WHERE deletedAt IS NOT NULL
+```
+
+And by creating your own instances you can receive custom requests
+
+### 📝 About Caching
+
+The caching feature of this ORM store in cache the data to improve reading (GET) system by saving the results of the SELECT requests. The cache is maintained in memory and bound by a size limit to avoid over consumption of memory. If the cache is full, and there is a request to cha nge a key/value pair, it should discard the least us ed item in the cache. Every cache item stores the original SQL query and its parameters (in the form of an escape array), as well as the result set and a timestamp indicating the time of caching. There is also a Time-To-Live (TTL) associated with the cached data, it represents how long the data is still valid.
+If the present time surpasses the TTL, the cached resource is marked as invalid and deleted at the next access attempt. Caching is used during SELECT queries. Other queries that edit data such as INSERT, UPDATE, DELETE, and so forth, clear the relevant cache partitions. Different behaviors of caching can be adjusted with settings like turning caching on and off, changing the upper limit of memory cache, and so forth.
+
+You can also clear the cache at any time:
+
+```typescript
+await ModularORM.getInstance.clearCache()
+```

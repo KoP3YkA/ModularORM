@@ -11,4 +11,8 @@ export class Logger {
         console.log(chalk.red('[ ModularORM ] ') + message)
     }
 
+    public static warn(message: string) {
+        console.log(chalk.yellowBright(`[ ModularORM ] ${message} | WARN`))
+    }
+
 }

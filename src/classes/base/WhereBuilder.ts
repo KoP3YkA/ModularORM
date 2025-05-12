@@ -1,5 +1,7 @@
 import {BaseBuilder} from "../abstract/BaseBuilder";
 import {Errors} from "./Errors";
+import {System} from "../../namespaces/System";
+import {QueryIs} from "./QueryIs";
 
 export type ConditionOperator = '=' | '>' | '<' | '>=' | '<=' | 'LIKE' | 'IN' | 'BETWEEN';
 
@@ -19,6 +21,11 @@ export class WhereBuilder extends BaseBuilder {
      * @param value - equals value
      */
     public equalAnd(column: string, value: any): this {
+        if (value instanceof QueryIs) {
+            this.conditions.push(`${column} ${value.tag}`);
+            this.nextConjunctions.push('AND')
+            return this;
+        }
         this.conditions.push(`${column} = ?`);
         this.values.push(value);
         this.nextConjunctions.push('AND')
@@ -31,6 +38,11 @@ export class WhereBuilder extends BaseBuilder {
      * @param value - equals value
      */
     public equalOr(column: string, value: any): this {
+        if (value instanceof QueryIs) {
+            this.conditions.push(`${column} ${value.tag}`);
+            this.nextConjunctions.push('OR')
+            return this;
+        }
         this.conditions.push(`${column} = ?`);
         this.values.push(value);
         this.nextConjunctions.push('OR')
@@ -81,6 +93,7 @@ export class WhereBuilder extends BaseBuilder {
             sql += ` ${this.conditions[i]}`;
             if (i+1 < this.conditions.length) sql += ` ${this.nextConjunctions[i]}`
         }
+
         return sql.trim();
     }
 

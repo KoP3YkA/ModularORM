@@ -6,6 +6,7 @@ import {Query} from "../../interfaces/Query";
 import {WhereBuilder} from "./WhereBuilder";
 import {HavingBuilder} from "./HavingBuilder";
 import {QueryEvent} from "../../interfaces/QueryEvent";
+import {System} from "../../namespaces/System";
 
 export class SQLQueryBuilder {
 

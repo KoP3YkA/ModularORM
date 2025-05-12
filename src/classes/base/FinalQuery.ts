@@ -11,6 +11,8 @@ import {QueryExecuteType} from "../../enums/QueryExecuteType";
 import {System} from "../../namespaces/System";
 import {QueryHandler} from "../../types/QueryHandler";
 import {Module} from "../abstract/Module";
+import {Logger} from "../Logger";
+import {Settings} from "./Settings";
 
 /**
  * Represents a final SQL query built by the `QueryBuilder`.
@@ -70,7 +72,9 @@ export class FinalQuery {
         this.toString()
         await new DatabaseAPI().databaseSetQuery({
             sql: this.sql,
-            params: this.values
+            params: this.values,
+            useCache: this.builder.useCache,
+            cacheTTL: this.builder.cacheTTL
         })
         this.handleEvent({table: this.table, type: this.type, params: this.values, sql: this.sql, execute: QueryExecuteType.SET})
     }
@@ -88,7 +92,9 @@ export class FinalQuery {
 
         const dbResult : any[] = await new DatabaseAPI().databaseGetQuery({
             sql: this.sql,
-            params: this.values
+            params: this.values,
+            useCache: this.builder.useCache,
+            cacheTTL: this.builder.cacheTTL
         });
 
         const res = dbResult.map(row => {
@@ -96,6 +102,7 @@ export class FinalQuery {
             const prototype = ctor.prototype;
             const columnMappings: Array<{ propertyKey: string; columnName: string }> =
                 Reflect.getMetadata('resultAnnotations-mapping-list', prototype) || [];
+            let error : boolean = false;
 
             for (const { propertyKey, columnName } of columnMappings) {
                 if (!columnName || !row.hasOwnProperty(columnName)) continue;
@@ -120,9 +127,14 @@ export class FinalQuery {
                     const validatorFunc = obj.get(propertyKey)
 
                     if (validatorFunc && validatorFunc.func && !validatorFunc.func(entryResult, propertyKey)) {
-                        const instanceErrors = (resultInstance as any)['validateErrors']
-                        if (instanceErrors instanceof Set) {
-                            instanceErrors.add(validatorFunc.message)
+                        if (Settings.validationErrors) {
+                            if (Settings.logs) Logger.error(`Validation error: ${validatorFunc.message}`);
+                            error = true;
+                        } else {
+                            const instanceErrors = (resultInstance as any)['validateErrors']
+                            if (instanceErrors instanceof Set) {
+                                instanceErrors.add(validatorFunc.message)
+                            }
                         }
                     }
 
@@ -130,8 +142,9 @@ export class FinalQuery {
 
             }
 
-            return resultInstance;
-        });
+            if (!error) return resultInstance;
+            else return null
+        }).filter(obj => obj !== null);
         this.handleEvent({table: this.table, type: this.type, params: this.values, sql: this.sql, execute: QueryExecuteType.GET})
         return res;
     }

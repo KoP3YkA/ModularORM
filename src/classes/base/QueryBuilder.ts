@@ -25,6 +25,9 @@ export class QueryBuilder extends BaseBuilder {
     public having : OrNull<HavingBuilder> = null;
     public offset : OrNull<number> = null;
 
+    public useCache : boolean = true;
+    public cacheTTL : number = 300;
+
     public constructor() {
         super();
     }
@@ -136,6 +139,16 @@ export class QueryBuilder extends BaseBuilder {
      */
     public setUpdate(update: UpdateBuilder) : QueryBuilder {
         this.whatUpdate = update;
+        return this;
+    }
+
+    public setUseCache(use: boolean = true) : QueryBuilder {
+        this.useCache = use;
+        return this
+    }
+
+    public setCacheTTL(ttl: number) : QueryBuilder {
+        this.cacheTTL = ttl;
         return this;
     }
 

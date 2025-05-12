@@ -48,6 +48,8 @@ export class ModelAdapter {
         builder.setTable(this.module)
         builder.setType(QueryType.SELECT)
         builder.setSelect(new SelectBuilder().addAll())
+        builder.setUseCache(params?.useCache)
+        builder.setCacheTTL(params?.cacheTTL ?? 300)
         if (Object.keys(where).length > 0) builder.setWhere(whereBuilder)
 
         if (params?.order) builder.setDesc(params.order)

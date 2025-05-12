@@ -5,6 +5,8 @@ import {DatabaseAPI} from "./classes/base/DatabaseAPI";
 import {DatabaseUpdate} from "./classes/base/DatabaseUpdate";
 import {StartParams} from "./interfaces/StartParams";
 import {Settings} from "./classes/base/Settings";
+import {System} from "./namespaces/System";
+import {Cache} from "./classes/base/Cache";
 
 /**
  * Main class for managing the ORM system.
@@ -35,11 +37,22 @@ export class ModularORM {
         if (typeof databaseParams.logs === 'boolean') Settings.logs = databaseParams.logs;
         else Settings.logs = false;
 
+        if (!databaseParams.maxMemoryUsageMB) Settings.maxMemoryUsage = 80;
+        else Settings.maxMemoryUsage = databaseParams.maxMemoryUsageMB;
+
+        if (!databaseParams.cacheSizeEstimationType) Settings.cacheSizeEstimationType = 'approximate';
+        else Settings.cacheSizeEstimationType = databaseParams.cacheSizeEstimationType;
+
+        if (typeof databaseParams.useCache === 'boolean') Settings.useCache = databaseParams.useCache;
+        else Settings.useCache = true;
+
         await Database.connect(this.pickDatabaseParams(databaseParams));
         this.database = new DatabaseAPI();
         await Database.init();
-        await DatabaseUpdate.updateTables();
+        if (System.MIGRATION_TABLES.size !== 0) await DatabaseUpdate.updateTables();
     }
+
+    public clearCache = () : void => Cache.clearCache();
 
     /**
      * Retrieves the single instance of the ModularORM class (Singleton pattern).

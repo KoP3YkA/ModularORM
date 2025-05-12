@@ -1,4 +1,6 @@
 export interface Query {
     sql: string,
-    params: any[]
+    params: any[],
+    useCache?: boolean,
+    cacheTTL?: number
 }
