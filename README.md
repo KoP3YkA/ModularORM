@@ -23,7 +23,7 @@ ModularORM is a powerful and flexible Object-Relational Mapping (ORM) library fo
 - [Creating select queries](#-creating-select-queries)
 - [Creating update queries](#-creating-update-queries)
 - [Other queries](#-other-queries)
-- [Automatic table updates](#-automatic-table-updates)
+- [Migrations](#-migrations)
 - [Default sql functions](#-default-sql-functions)
 - [Information Schema](#-information-schema)
 - [Custom column annotations](#-custom-column-annotations)
@@ -124,6 +124,7 @@ await database.start({
     password: 'ur_password',
     database: 'ur_database_name',
     port: 3306, // Or any
+    // ---- Optional ----
     // Enables query logs
     logs: true,
     // Automatically creates the required entities
@@ -135,7 +136,13 @@ await database.start({
     // Method for calculating cache size (either process.memoryUsage or JSON.stringify size)
     cacheSizeEstimationType: 'approximate',
     // Or you can turn off the cache altogether
-    useCache: false
+    useCache: false,
+    // Type of the migrations
+    migrations: 'file',
+    // Should transactions be rolled back automatically in case of exceptions?
+    rollbackTransactionsErrors: true,
+    // Type of connection. Default - pool
+    connectionType: 'pool'
 });
 ```
 
@@ -170,7 +177,16 @@ Now, let's simplify the code by adding `ModuleAdapter` to our table:
 > ⚠️ It is better to use the [Repository pattern](#-repository)
 
 ```typescript
-@Table()
+@Table({ // Optionally, you can define parameters for your table. These parameters will also be considered during migrations.
+    // Priority determines how much faster this table will be created compared to others. The higher the priority, the earlier its creation query will be executed.
+    priotiry: 1000,
+    // Comment
+    comment: 'Just comment',
+    // Collation of the table
+    collation: 'utf8_general_ci',
+    // Row format. NOTE: Compressed can be throws exeptions
+    rowFormat: 'Dynamic'
+})
 @NamedTable('ur_table_name')
 class TestTable extends Module {
     
@@ -202,8 +218,12 @@ Easy, right?)
 
 To retrieve data from the database, you need to create a result class that extends `QueryResult`.
 
+> NOTE: Do not use the QueryResult class, as it will be deprecated soon.
+
+> NOTE 2: You can use the same class responsible for the table if you prefer. 
+
 ```typescript
-class TestResult extends QueryResult {
+class TestResult extends QueryResult { // Query result is deprecated
     
     @Column('id') // // Specify this annotation for each parameter.
     public autoId!: number;
@@ -245,7 +265,7 @@ const builder : QueryBuilder = new QueryBuilder()
             // .conditionAnd('columnName', 'condition (<, >, LIKE, IN and more)', 'value')
     )
     // You can add ORDER BY,
-    .setDesc('columnName')
+    .addOrder('columnName')
     // Set limit,
     .setLimit(1)
     // Add GROUP BY,
@@ -363,20 +383,18 @@ Creating queries of other types is not much different from the ones we have cove
 
 **❓ Why is there no `ALTER` query?**
 
-This type of query is not present in the library for two reasons. First, `ModularORM` supports automatic column updates when they do not match the database. This is done through the `Migration` annotation (we will discuss this later). Second, if you need to execute a query that cannot be sent through the library, you can send queries directly:
+This type of query is not present in the library for two reasons. First, `ModularORM` supports migrations when columns do not match the database. This is done through the `Migration` annotation (we will discuss this later). Second, if you need to execute a query that cannot be sent through the library, you can send queries directly:
 
 ```typescript
-await new DatabaseAPI().databaseSetQuery({
+await new DatabaseAPI().databaseSetQuery({ // Also u can use Repository#query
     sql: `ALTER TABLE ur_table_name ADD testColumn VARCHAR(32)`,
     params: [] // Values for escaping
 })
 ```
 
-### 🔄 Automatic Table Updates
+### 🔄 Migrations
 
-> ⚠️ As of version 0.2.2 this feature is in Beta and is best not used.
-
-As mentioned earlier, the library supports automatic table updates. Currently, only column updates are supported (adding them to the database and removing them accordingly). Let's assume you initially created a table and used it for a month:
+As mentioned earlier, the library supports migrations. Let's assume you initially created a table and used it for a month:
 
 ```typescript
 @Table()
@@ -423,12 +441,12 @@ export class ApiKeysModule extends Module {
 }
 ```
 
-What should you do in this case? Manually add the column? No, you can add the `Migration` annotation, specifying `MigrationType.COLUMNS`:
+What should you do in this case? Manually add the column? No, you can add the `Migration` annotation:
 
 ```typescript
 @Table()
 @NamedTable('api_keys')
-@Migration(MigrationType.COLUMNS)
+@Migration()
 export class ApiKeysModule extends Module {
     
     @Column(DefaultColumn.AUTOINCREMENT_ID)
@@ -449,7 +467,16 @@ export class ApiKeysModule extends Module {
 }
 ```
 
-Next time the application runs, ModularORM will notice that the columns in the Module do not match the columns in the database and will add them via `ALTER TABLE`. This also works in reverse: if you need to remove a column. We do not recommend using this all the time, as the process of adding missing columns is quite complex and takes some time during application startup.
+Upon the next application launch, ModularORM will detect any discrepancies between the module's columns and the database columns, automatically adding them via ALTER TABLE. This also works in reverse: if you need to remove a column, it will be handled as well. Moreover, if you modify an existing column (e.g., remove an index or change the default value), the necessary migrations will be generated.
+
+However, we do not recommend relying on this feature continuously, as the process of adding missing columns is quite complex and can significantly impact startup time.
+
+Also, make sure to select the appropriate migration type in the settings during startup:
+
+* auto – the ORM will automatically execute the necessary queries upon launch.
+
+* file – all queries will be written to a file, allowing you to review and edit them before running the migration.
+
 
 ### 💡 Default SQL Functions
 
@@ -693,6 +720,12 @@ await usersRepository.insert({ userId: '124', name: 'John' });
 ```
 
 This design is intended for Dependency Injection in your code and strict typing when constructing queries since Repository uses `Partial<Module>` for `WHERE` and `INSERT` blocks.
+
+You can also omit the DTO (QueryResult) if you prefer to use the table itself as a replacement:
+
+```typescript
+const usersRepository : Repository<UsersModule> = new Repository(UsersModule);
+```
 
 ### ⚖️ QueryIs Class
 

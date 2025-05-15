@@ -46,6 +46,15 @@ export class ModularORM {
         if (typeof databaseParams.useCache === 'boolean') Settings.useCache = databaseParams.useCache;
         else Settings.useCache = true;
 
+        if (!databaseParams.migrations) Settings.migrations = 'auto';
+        else Settings.migrations = databaseParams.migrations;
+
+        if (!databaseParams.rollbackTransactionsErrors) Settings.rollbackTransactionsErrors = true;
+        else Settings.rollbackTransactionsErrors = databaseParams.rollbackTransactionsErrors;
+
+        if (!databaseParams.connectionType) Settings.connectionType = 'pool';
+        else Settings.connectionType = databaseParams.connectionType;
+
         await Database.connect(this.pickDatabaseParams(databaseParams));
         this.database = new DatabaseAPI();
         await Database.init();

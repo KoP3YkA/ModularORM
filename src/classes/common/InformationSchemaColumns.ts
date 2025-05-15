@@ -1,10 +1,8 @@
 import {Module} from "../abstract/Module";
-import {QueryResult} from "../base/QueryResult";
 import {SelectQueryParams} from "../../interfaces/SelectQueryParams";
 import {Nothing} from "../../types/Nothing";
 import {DatabaseAPI} from "../base/DatabaseAPI";
 import {ModelAdapter} from "../adapter/ModelAdapter";
-import {InformationSchemaResult} from "./InformationSchema";
 import {Result} from "../../decorators/Result";
 import {IsNumber, IsString, IsUUID} from "../../decorators/validators/Validators";
 
@@ -14,7 +12,7 @@ export class InformationSchemaColumns extends Module {
         return 'information_schema.COLUMNS'
     }
 
-    public static select = async <T extends QueryResult>(where: { [key: string] : any }, params?: Partial<SelectQueryParams>) : Nothing => {
+    public static select = async (where: { [key: string] : any }, params?: Partial<SelectQueryParams<InformationSchemaColumns>>) : Nothing => {
         if (where['TABLE_SCHEMA'] && where['TABLE_NAME']) {
             await new DatabaseAPI().databaseSetQuery({
                 sql: `ANALYZE TABLE ${where['TABLE_SCHEMA']}.${where['TABLE_NAME']};`,
@@ -26,7 +24,7 @@ export class InformationSchemaColumns extends Module {
 
 }
 
-export class InformationSchemaColumnsResult extends QueryResult {
+export class InformationSchemaColumnsResult {
 
     @Result('TABLE_CATALOG')
     public tableCatalog : string = "";
@@ -54,5 +52,11 @@ export class InformationSchemaColumnsResult extends QueryResult {
 
     @Result('NUMERIC_SCALE')
     public numericScale : number = 1;
+
+    @Result('EXTRA')
+    public extra!: any;
+
+    @Result('IS_NULLABLE')
+    public isNullable!: string;
 
 }

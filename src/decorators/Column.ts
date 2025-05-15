@@ -38,6 +38,7 @@ export function Column(params: Partial<ColumnParams>) {
                 foreignKey: params.foreignKey || false,
                 onDeleteForeign: params.onDeleteForeign || false,
                 onUpdateForeign: params.onUpdateForeign || false,
+                comment: params.comment || false
             }
         });
 

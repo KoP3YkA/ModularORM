@@ -1,5 +1,6 @@
-import {MigrationType} from "../enums/MigrationType";
+
 import {DatabaseParams} from "../interfaces/DatabaseParams";
+import {TableCreateParams} from "../interfaces/TableCreateParams";
 
 interface Executor {
     prototype: any,
@@ -20,8 +21,11 @@ export namespace System {
         >
     > = new Map();
     export const TRANSFORMS : Map<Object, Map<string, (value: any) => any>> = new Map();
-    export const MIGRATION_TABLES : Map<Function, Set<MigrationType>> = new Map()
+    export const MIGRATION_TABLES : Set<Function> = new Set()
     export let DATABASE_CONNECTION_DATA : DatabaseParams;
     export const TABLES_PRIORITY : Map<string, number> = new Map()
+    export const TABLES_SETTINGS : Map<string, TableCreateParams> = new Map();
+
+
 
 }

@@ -1,6 +1,6 @@
 {
   "name": "modular-orm",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "A simple ORM library for TypeScript that allows you to work with the database using classes",
   "repository": {
     "url": "git+https://github.com/KoP3YkA/ModularORM.git"
@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "chalk": "4.0",
+    "cli-table3": "^0.6.5",
     "mysql2": "^3.12.0",
     "reflect-metadata": "^0.2.2"
   }

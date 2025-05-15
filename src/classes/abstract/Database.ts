@@ -4,21 +4,26 @@ import {Nothing} from "../../types/Nothing";
 import {System} from "../../namespaces/System";
 import {Logger} from "../Logger";
 import chalk from "chalk";
+import {Settings} from "../base/Settings";
 
 export abstract class Database {
 
     public static listTables : Set<string> = new Set<string>();
 
-    protected static connection : Pool;
+    protected static connection : Pool | Connection;
 
     protected constructor() {}
 
     public static async connect(params: DatabaseParams) : Nothing {
         System.DATABASE_CONNECTION_DATA = params;
-        if (!this.connection) this.connection = await createPool({...params,
-            keepAliveInitialDelay: 10000,
-            enableKeepAlive: true
-        })
+        if (Settings.connectionType === 'pool') {
+            if (!this.connection) this.connection = await createPool({...params,
+                keepAliveInitialDelay: 10000,
+                enableKeepAlive: true
+            })
+        } else if (Settings.connectionType === 'connection') {
+            if (!this.connection) this.connection = await createConnection(params)
+        }
     }
 
     public static async init() : Nothing {

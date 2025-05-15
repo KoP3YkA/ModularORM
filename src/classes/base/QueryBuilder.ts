@@ -19,7 +19,7 @@ export class QueryBuilder extends BaseBuilder {
     public whatInsert?: InsertBuilder
 
     public where : OrNull<WhereBuilder> = null;
-    public desc : OrNull<string> = null;
+    public desc : string[] = [];
     public limit : OrNull<number> = null;
     public group : OrNull<string> = null;
     public having : OrNull<HavingBuilder> = null;
@@ -85,10 +85,11 @@ export class QueryBuilder extends BaseBuilder {
     /**
      * Sets the ORDER BY clause with descending order for a specific default.
      * @param column - The name of the default to order by in descending order.
+     * @param type
      * @returns The current QueryBuilder instance.
      */
-    public setDesc(column: string) : QueryBuilder {
-        this.desc = column;
+    public addOrder(column: string, type: 'ASC' | 'DESC') : QueryBuilder {
+        this.desc.push(`${column} ${type}`);
         return this;
     }
 

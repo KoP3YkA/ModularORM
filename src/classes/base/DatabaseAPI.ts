@@ -5,8 +5,11 @@ import {Query} from "../../interfaces/Query";
 import {Logger} from "../Logger";
 import chalk from "chalk";
 import {Cache} from "./Cache";
+import {Settings} from "./Settings";
+import {Pool} from "mysql2/typings/mysql/lib/Pool";
 
 export class DatabaseAPI extends Database {
+    public static isTransaction: boolean = false;
 
     public constructor() {
         super();
@@ -22,17 +25,26 @@ export class DatabaseAPI extends Database {
      * @param params - The parameters required for the query, including the SQL statement and the parameters for the query.
      * @returns Nothing (Promise<void>).
      */
-    public async databaseSetQuery(params: Query) : Nothing {
+    public async databaseSetQuery(params: Query) : Promise<any> {
         try {
             const startTime : number = Date.now();
             const [rows, _] : [ QueryResult, FieldPacket[] ] = await DatabaseAPI.connection.query(params.sql, params.params);
             const endTime : number = Date.now();
-            Cache.delCache(params.sql, params.params)
-            Logger.info(chalk.green(`Executed query `) + chalk.yellowBright(params.sql) + chalk.green(` in `) + chalk.yellowBright(`${endTime - startTime}ms`) + chalk.green('. ') + chalk.yellowBright("affectedRows" in rows ? rows.affectedRows : 0) + chalk.green(' rows affected'))
+            Cache.delCache(params.sql, params.params);
+            Logger.info(chalk.green(`Executed query `) + chalk.yellowBright(params.sql) + chalk.green(` in `) + chalk.yellowBright(`${endTime - startTime}ms`) + chalk.green('. ') + chalk.yellowBright("affectedRows" in rows ? rows.affectedRows : 0) + chalk.green(' rows affected'));
+            if ("getConnection" in DatabaseAPI.connection) {
+                (await DatabaseAPI.connection.getConnection()).release()
+            }
+            return 'insertId' in rows ? rows.insertId : undefined;
         } catch (err) {
-            Logger.error(chalk.red(`Error when executing SET query:\n${err}`))
+            if (DatabaseAPI.isTransaction && Settings.rollbackTransactionsErrors) await this.rollback()
+            Logger.error(chalk.red(`Error when executing SET query:\n${err}`));
+            if ("getConnection" in DatabaseAPI.connection) {
+                (await DatabaseAPI.connection.getConnection()).release()
+            }
+            return null;
         }
-        (await DatabaseAPI.connection.getConnection()).release()
+
     }
 
     /**
@@ -59,8 +71,34 @@ export class DatabaseAPI extends Database {
             Logger.error(chalk.red(`Error when executing GET query:\n${err}`))
             return [];
         }
-        (await DatabaseAPI.connection.getConnection()).release()
+        if ("getConnection" in DatabaseAPI.connection) {
+            (await DatabaseAPI.connection.getConnection()).release()
+        }
         return rows as any[];
+    }
+
+    public async startTransaction() {
+        if (DatabaseAPI.isTransaction) {
+            return Logger.error('Transaction already active')
+        }
+        await DatabaseAPI.connection.beginTransaction();
+        DatabaseAPI.isTransaction = true;
+    }
+
+    public async commitTransaction() {
+        if (!DatabaseAPI.isTransaction) {
+            return Logger.error('There is no active transaction')
+        }
+        await DatabaseAPI.connection.commit()
+        DatabaseAPI.isTransaction = false;
+    }
+
+    public async rollback() {
+        if (!DatabaseAPI.isTransaction) {
+            return Logger.error('There is no active transaction')
+        }
+        await DatabaseAPI.connection.rollback()
+        DatabaseAPI.isTransaction = false;
     }
 
 }

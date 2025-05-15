@@ -3,16 +3,15 @@ import {QueryBuilder} from "../base/QueryBuilder";
 import {QueryType} from "../base/QueryType";
 import {InsertBuilder} from "../base/InsertBuilder";
 import {Nothing} from "../../types/Nothing";
-import {QueryResult} from "../base/QueryResult";
 import {SelectQueryParams} from "../../interfaces/SelectQueryParams";
 import {SelectBuilder} from "../base/SelectBuilder";
 import {WhereBuilder} from "../base/WhereBuilder";
 import {UpdateBuilder} from "../base/UpdateBuilder";
 
-export class ModelAdapter {
+export class ModelAdapter<B extends Module>{
 
     public constructor(
-        public module : Module
+        public module : { new (...args: any[]) : B }
     ) {}
 
     private getWhereBuilder(where: { [key: string] : any }) : WhereBuilder {
@@ -41,7 +40,7 @@ export class ModelAdapter {
 
     }
 
-    public async select<T extends QueryResult>(ctor: { new (): T }, where: { [key: string] : any }, params?: Partial<SelectQueryParams>) : Promise<T[]> {
+    public async select<T extends Object>(ctor: new (...args: any[]) => T, where: { [key: string] : any }, params?: Partial<SelectQueryParams<B>>) : Promise<T[]> {
         const whereBuilder : WhereBuilder = this.getWhereBuilder(where);
 
         const builder : QueryBuilder = new QueryBuilder();
@@ -52,7 +51,11 @@ export class ModelAdapter {
         builder.setCacheTTL(params?.cacheTTL ?? 300)
         if (Object.keys(where).length > 0) builder.setWhere(whereBuilder)
 
-        if (params?.order) builder.setDesc(params.order)
+        if (params?.order && typeof params.order === "object") {
+            Object.entries(params.order).forEach(([key, value]) => {
+                builder.addOrder(key, value as 'ASC' | 'DESC');
+            });
+        }
         if (params?.limit) builder.setLimit(params.limit)
         if (params?.offset) builder.setOffset(params.offset)
 

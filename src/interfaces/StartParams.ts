@@ -35,4 +35,19 @@ export interface StartParams extends DatabaseParams {
      * Will ORM use cache?
      */
     useCache?: boolean;
+
+    /**
+     * Type of migrations
+     */
+    migrations?: 'auto' | 'file';
+
+    /**
+     * Should transactions be rolled back automatically in case of exceptions?
+     */
+    rollbackTransactionsErrors?: boolean;
+
+    /**
+     * Type of connection. Default - pool
+     */
+    connectionType?: 'connection' | 'pool';
 }

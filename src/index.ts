@@ -53,13 +53,15 @@ export * from './interfaces/Query';
 export * from './interfaces/SelectQueryParams'
 export * from './interfaces/Validate'
 export * from './interfaces/StartParams'
+export * from './interfaces/TableCreateParams'
 
 // ---------- TYPES ----------
 export * from './types/QueryHandler'
+export * from './types/Charset'
+export * from './types/Collation'
 
 // ---------- NAMESPACES ----------
 export * from './namespaces/DefaultColumn'
 
 // ---------- ENUMS ----------
 export * from './enums/QueryExecuteType'
-export * from './enums/MigrationType'

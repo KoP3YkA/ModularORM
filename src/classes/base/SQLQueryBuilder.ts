@@ -114,8 +114,8 @@ export class SQLQueryBuilder {
         }
 
         // #----------- ORDER BY default DESC -----------#
-        if (builder.desc) {
-            sql += ` ORDER BY ${builder.desc} DESC`
+        if (builder.desc.length !== 0) {
+            sql += ` ORDER BY ${builder.desc.join(', ')}`
         }
 
         // #----------- LIMIT limit -----------#

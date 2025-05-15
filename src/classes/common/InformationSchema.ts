@@ -1,6 +1,5 @@
 import {Module} from "../abstract/Module";
 import {Result} from "../../decorators/Result";
-import {QueryResult} from "../base/QueryResult";
 import {SelectQueryParams} from "../../interfaces/SelectQueryParams";
 import {Nothing} from "../../types/Nothing";
 import {ModelAdapter} from "../adapter/ModelAdapter";
@@ -12,7 +11,7 @@ export class InformationSchema extends Module {
         return 'information_schema.TABLES'
     }
 
-    public static select = async <T extends QueryResult>(where: { [key: string] : any }, params?: Partial<SelectQueryParams>) : Nothing => {
+    public static select = async (where: { [key: string] : any }, params?: Partial<SelectQueryParams<InformationSchema>>) : Nothing => {
         if (where['TABLE_SCHEMA'] && where['TABLE_NAME']) {
             await new DatabaseAPI().databaseSetQuery({
                 sql: `ANALYZE TABLE ${where['TABLE_SCHEMA']}.${where['TABLE_NAME']};`,

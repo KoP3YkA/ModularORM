@@ -3,6 +3,7 @@ import 'reflect-metadata';
 import {SqlFunctions} from "../classes/base/SqlFunctions";
 import {System} from "../namespaces/System";
 import {Logger} from "../classes/Logger";
+import {TableCreateParams} from "../interfaces/TableCreateParams";
 
 /**
  * Table decorator.
@@ -12,9 +13,9 @@ import {Logger} from "../classes/Logger";
  *
  * The `table` static property of the class should specify the name of the database table.
  *
- * @param target - The class to which this decorator is applied. It should have a static `table` property that defines the table name.
+ * @param params
  */
-export const Table = (priority: number = 0) => {
+export const Table = (params?: Partial<TableCreateParams>) => {
     return function (target: any) {
         const columns = Reflect.getMetadata("columns", target) || [];
         const indexSQL: string[] = [];
@@ -51,6 +52,10 @@ export const Table = (priority: number = 0) => {
                 else columnSQL += ` ON UPDATE '${params.onUpdate}'`
             }
 
+            if (params.comment) {
+                columnSQL += ` COMMENT '${params.comment}'`
+            }
+
             if (params.foreignKey) {
                 foreignKeysSQL.push(
                     `FOREIGN KEY (\`${propertyKey}\`) REFERENCES ${params.foreignKey.referencedTable}(${params.foreignKey.referencedColumn})` +
@@ -73,9 +78,19 @@ export const Table = (priority: number = 0) => {
             : "";
         const indexes = indexSQL.length > 0 ? `, ${indexSQL.join(", ")}` : "";
 
-        const createTableSQL = `CREATE TABLE IF NOT EXISTS ${tableName} (${columnsSQL}${indexes}${foreignKeys});`;
+        const tableComment = params?.comment ? ` COMMENT='${params.comment}'` : '';
+        const tableCollation = params?.collation ? ` COLLATE=${params.collation}` : '';
+        const tableFormat = params?.rowFormat ? ` ROW_FORMAT=${params.rowFormat}` : '';
+
+        const createTableSQL = `CREATE TABLE IF NOT EXISTS ${tableName} (${columnsSQL}${indexes}${foreignKeys})${tableCollation}${tableFormat}${tableComment};`;
         System.TABLES_NAMES.set(target, tableName)
-        System.TABLES_PRIORITY.set(tableName, priority)
+        System.TABLES_PRIORITY.set(tableName, params?.priority ?? 0)
+        System.TABLES_SETTINGS.set(tableName, {
+            priority: params?.priority ?? 0,
+            comment: params?.comment ?? '',
+            collation: params?.collation ?? 'currency',
+            rowFormat: params?.rowFormat ?? 'Dynamic'
+        })
 
         Database.listTables.add(createTableSQL);
     }

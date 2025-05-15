@@ -91,4 +91,9 @@ export interface ColumnParams {
      */
     onUpdateForeign: "CASCADE" | "SET NULL" | "RESTRICT";
 
+    /**
+     * Comment
+     */
+    comment: string;
+
 }

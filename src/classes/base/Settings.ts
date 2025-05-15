@@ -5,5 +5,8 @@ export class Settings {
     public static maxMemoryUsage : number;
     public static cacheSizeEstimationType : 'memoryUsage' | 'approximate';
     public static useCache : boolean;
+    public static migrations : 'auto' | 'file';
+    public static rollbackTransactionsErrors: boolean;
+    public static connectionType: 'connection' | 'pool';
 
 }

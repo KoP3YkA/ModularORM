@@ -3,13 +3,11 @@ import {Nothing} from "../../types/Nothing";
 import {SQLQueryBuilder} from "./SQLQueryBuilder";
 import {Query} from "../../interfaces/Query";
 import {DatabaseAPI} from "./DatabaseAPI";
-import {QueryResult} from "./QueryResult";
 import {QueryEvent} from "../../interfaces/QueryEvent";
 import {QueryType} from "./QueryType";
 import {QueryEventType} from "../../interfaces/QueryEventType";
 import {QueryExecuteType} from "../../enums/QueryExecuteType";
 import {System} from "../../namespaces/System";
-import {QueryHandler} from "../../types/QueryHandler";
 import {Module} from "../abstract/Module";
 import {Logger} from "../Logger";
 import {Settings} from "./Settings";
@@ -87,7 +85,7 @@ export class FinalQuery {
      * @returns {Promise<T[]>} A promise that resolves to an array of mapped instances of the specified class.
      * @template T - The type of the resultAnnotations class.
      */
-    public async get<T extends QueryResult>(ctor: { new (): T }) : Promise<T[]> {
+    public async get<T extends Object>(ctor: new (...args: any[]) => T) : Promise<T[]> {
         this.toString();
 
         const dbResult : any[] = await new DatabaseAPI().databaseGetQuery({

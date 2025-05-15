@@ -1,8 +1,8 @@
-export interface SelectQueryParams<T extends string = string> {
+export interface SelectQueryParams<T> {
 
     limit: number;
     offset: number;
-    order: T;
+    order: Partial<{ [K in keyof T]: 'ASC' | 'DESC' }>;
     useCache: boolean;
     cacheTTL: number;
 
