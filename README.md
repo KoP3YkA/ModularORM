@@ -1,6 +1,7 @@
 ## ModularORM
 
 ![Test](https://github.com/KoP3YkA/ModularORM/actions/workflows/tests.yml/badge.svg)
+[![npm version](https://badge.fury.io/js/modular-orm.svg)](https://badge.fury.io/js/modular-orm)
 
 `ModularORM` is a lightweight, fully object-oriented ORM library for TypeScript and MySQL. It is designed for simplicity and strong type safety, with a class-based API built around decorators.
 Key Features
