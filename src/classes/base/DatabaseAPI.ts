@@ -7,6 +7,7 @@ import chalk from "chalk";
 import {Cache} from "./Cache";
 import {Settings} from "./Settings";
 import {Pool} from "mysql2/typings/mysql/lib/Pool";
+import {ModularORMException} from "./ModularORMException";
 
 export class DatabaseAPI extends Database {
     public static isTransaction: boolean = false;
@@ -38,11 +39,10 @@ export class DatabaseAPI extends Database {
             return 'insertId' in rows ? rows.insertId : undefined;
         } catch (err) {
             if (DatabaseAPI.isTransaction && Settings.rollbackTransactionsErrors) await this.rollback()
-            Logger.error(chalk.red(`Error when executing SET query:\n${err}`));
             if ("getConnection" in DatabaseAPI.connection) {
                 (await DatabaseAPI.connection.getConnection()).release()
             }
-            return null;
+            throw new ModularORMException(`Error when executing SET query:\n${err}`);
         }
 
     }
@@ -68,8 +68,7 @@ export class DatabaseAPI extends Database {
             Logger.info(chalk.green('Executed query ') + chalk.yellowBright(params.sql) + chalk.green(` in `) + chalk.yellowBright(`${endTime-startTime}ms`))
             if (this.checkUseCache(params.useCache)) Cache.setCache(params.sql, params.params, rows, params.cacheTTL)
         } catch (err) {
-            Logger.error(chalk.red(`Error when executing GET query:\n${err}`))
-            return [];
+            throw new ModularORMException(`Error when executing GET query:\n${err}`)
         }
         if ("getConnection" in DatabaseAPI.connection) {
             (await DatabaseAPI.connection.getConnection()).release()
@@ -79,7 +78,7 @@ export class DatabaseAPI extends Database {
 
     public async startTransaction() {
         if (DatabaseAPI.isTransaction) {
-            return Logger.error('Transaction already active')
+            throw new ModularORMException('Transaction already active')
         }
         await DatabaseAPI.connection.beginTransaction();
         DatabaseAPI.isTransaction = true;
@@ -87,7 +86,7 @@ export class DatabaseAPI extends Database {
 
     public async commitTransaction() {
         if (!DatabaseAPI.isTransaction) {
-            return Logger.error('There is no active transaction')
+            throw new ModularORMException('There is no active transaction')
         }
         await DatabaseAPI.connection.commit()
         DatabaseAPI.isTransaction = false;
@@ -95,7 +94,7 @@ export class DatabaseAPI extends Database {
 
     public async rollback() {
         if (!DatabaseAPI.isTransaction) {
-            return Logger.error('There is no active transaction')
+            throw new ModularORMException('There is no active transaction')
         }
         await DatabaseAPI.connection.rollback()
         DatabaseAPI.isTransaction = false;

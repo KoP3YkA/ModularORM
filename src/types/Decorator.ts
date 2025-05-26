@@ -1,0 +1,1 @@
+export type Decorator = (target: any, propertyKey: string) => void

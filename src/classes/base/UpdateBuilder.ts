@@ -1,5 +1,6 @@
 import {BaseBuilder} from "../abstract/BaseBuilder";
 import {Errors} from "./Errors";
+import {QueryIs} from "./QueryIs";
 
 /**
  * Builder class for constructing the `SET` part of an `UPDATE` SQL query.

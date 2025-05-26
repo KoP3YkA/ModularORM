@@ -8,5 +8,8 @@ export class Settings {
     public static migrations : 'auto' | 'file';
     public static rollbackTransactionsErrors: boolean;
     public static connectionType: 'connection' | 'pool';
+    public static returnsNullWhenError: boolean;
+    public static checkTablesExists: boolean;
+    public static databaseName: string;
 
 }

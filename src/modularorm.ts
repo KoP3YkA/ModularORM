@@ -55,7 +55,16 @@ export class ModularORM {
         if (!databaseParams.connectionType) Settings.connectionType = 'pool';
         else Settings.connectionType = databaseParams.connectionType;
 
-        await Database.connect(this.pickDatabaseParams(databaseParams));
+        if (typeof databaseParams.returnsNullWhenErrors === 'boolean') Settings.returnsNullWhenError = databaseParams.returnsNullWhenErrors;
+        else Settings.returnsNullWhenError = false;
+
+        if (typeof databaseParams.checkTablesExists === 'boolean') Settings.checkTablesExists = databaseParams.checkTablesExists;
+        else Settings.checkTablesExists = false;
+
+        const params = this.pickDatabaseParams(databaseParams);
+        Settings.databaseName = params.database;
+
+        await Database.connect(params);
         this.database = new DatabaseAPI();
         await Database.init();
         if (System.MIGRATION_TABLES.size !== 0) await DatabaseUpdate.updateTables();
@@ -67,7 +76,7 @@ export class ModularORM {
      * Retrieves the single instance of the ModularORM class (Singleton pattern).
      * @returns The single instance of the ModularORM class.
      */
-    public static get getInstance() : ModularORM {
+    public static getInstance() : ModularORM {
         if (!this.instance) this.instance = new ModularORM();
         return this.instance;
     }

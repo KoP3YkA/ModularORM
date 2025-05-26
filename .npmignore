@@ -2,7 +2,10 @@
 /node_modules
 /.idea
 /test
-/ignore
+/playground
+/example
 
 tsconfig.json
 tsup.config.ts
+jest.config.js
+last-readme.md

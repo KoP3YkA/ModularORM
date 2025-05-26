@@ -11,6 +11,9 @@ import {System} from "../../namespaces/System";
 import {Module} from "../abstract/Module";
 import {Logger} from "../Logger";
 import {Settings} from "./Settings";
+import {throws} from "node:assert";
+import {ModularORMException} from "./ModularORMException";
+import {HandleExceptions} from "../../decorators/HandleExceptions";
 
 /**
  * Represents a final SQL query built by the `QueryBuilder`.
@@ -68,13 +71,14 @@ export class FinalQuery {
      */
     public async execute() : Nothing {
         this.toString()
-        await new DatabaseAPI().databaseSetQuery({
+        const result = await new DatabaseAPI().databaseSetQuery({
             sql: this.sql,
             params: this.values,
             useCache: this.builder.useCache,
             cacheTTL: this.builder.cacheTTL
         })
         this.handleEvent({table: this.table, type: this.type, params: this.values, sql: this.sql, execute: QueryExecuteType.SET})
+        return result;
     }
 
     /**
@@ -126,7 +130,7 @@ export class FinalQuery {
 
                     if (validatorFunc && validatorFunc.func && !validatorFunc.func(entryResult, propertyKey)) {
                         if (Settings.validationErrors) {
-                            if (Settings.logs) Logger.error(`Validation error: ${validatorFunc.message}`);
+                            if (Settings.logs) throw new ModularORMException(`Validation error: ${validatorFunc.message}`);
                             error = true;
                         } else {
                             const instanceErrors = (resultInstance as any)['validateErrors']

@@ -5,5 +5,6 @@ export interface TableCreateParams {
     priority: number,
     comment: string,
     collation: Collation,
-    rowFormat: "Dynamic" | "Fixed" | "Compressed"
+    rowFormat: "Dynamic" | "Fixed" | "Compressed",
+    migrations: boolean
 }

@@ -1,0 +1,1 @@
+export type ArrowProxyObject = (object: any) => any;

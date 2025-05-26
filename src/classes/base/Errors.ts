@@ -1,4 +1,5 @@
 import {BaseEnumClass} from "../abstract/BaseEnumClass";
+import {ModularORMException} from "./ModularORMException";
 
 export class Errors extends BaseEnumClass {
 
@@ -15,7 +16,7 @@ export class Errors extends BaseEnumClass {
     ) {super();}
 
     public throw() : void {
-        throw new Error(this.description);
+        throw new ModularORMException(this.description);
     }
 
 }

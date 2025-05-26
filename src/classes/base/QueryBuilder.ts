@@ -8,6 +8,8 @@ import {HavingBuilder} from "./HavingBuilder";
 import {FinalQuery} from "./FinalQuery";
 import {UpdateBuilder} from "./UpdateBuilder";
 import {InsertBuilder} from "./InsertBuilder";
+import {JoinBuilder} from "./JoinBuilder";
+import {HandleExceptions} from "../../decorators/HandleExceptions";
 
 export class QueryBuilder extends BaseBuilder {
 
@@ -24,6 +26,7 @@ export class QueryBuilder extends BaseBuilder {
     public group : OrNull<string> = null;
     public having : OrNull<HavingBuilder> = null;
     public offset : OrNull<number> = null;
+    public join : OrNull<JoinBuilder> = null;
 
     public useCache : boolean = true;
     public cacheTTL : number = 300;
@@ -150,6 +153,11 @@ export class QueryBuilder extends BaseBuilder {
 
     public setCacheTTL(ttl: number) : QueryBuilder {
         this.cacheTTL = ttl;
+        return this;
+    }
+
+    public setJoin(join: JoinBuilder) : QueryBuilder {
+        this.join = join;
         return this;
     }
 

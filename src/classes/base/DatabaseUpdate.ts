@@ -12,6 +12,11 @@ import {Settings} from "./Settings";
 import fs from 'fs/promises';
 import * as path from "node:path";
 import {QueryIs} from "./QueryIs";
+import {ModuleSchema} from "../adapter/ModuleSchema";
+import {IJoinTable} from "../../interfaces/JoinTableInterface";
+import {Module} from "../abstract/Module";
+import {Relation} from "../../interfaces/Relation";
+import {ModularORMException} from "./ModularORMException";
 
 
 type ColumnT = {
@@ -38,7 +43,9 @@ type ORMColumn = {
 export class DatabaseUpdate {
 
     private static migrations: Set<string> = new Set();
+    private static downMigrations: Set<string> = new Set();
     private static migrationFile: string = path.resolve(process.cwd(), `ModularORM_migration.txt`)
+    private static downMigrationFile: string = path.resolve(process.cwd(), `ModularORM_down_migration.txt`)
 
     private static async checkFileExists(path: string) : Promise<boolean> {
         try {
@@ -67,8 +74,7 @@ export class DatabaseUpdate {
                 Logger.info(chalk.green('Migration from file successful completed. ') + chalk.yellowBright(successQueries) + chalk.green(` queries passed, `) + chalk.yellowBright(failedQueries) + chalk.green(` queries failed.`))
                 return
             } catch (err) {
-                Logger.error('Failed to migrate from file, try another method')
-                return
+                throw new ModularORMException('Failed to migrate from file, try another method')
             } finally {
                 await fs.rm(this.migrationFile).catch(() => {})
             }
@@ -76,6 +82,8 @@ export class DatabaseUpdate {
 
         for (const i of System.TABLES_NAMES.keys()) {
             if (!System.MIGRATION_TABLES.has(i)) continue;
+
+            await this.handleJoinTableAndManyToMany(i, new ModuleSchema(i).getName());
 
             const columns = Reflect.getMetadata("columns", i) || []
 
@@ -96,8 +104,7 @@ export class DatabaseUpdate {
             }
 
             if (results.length === 0) {
-                Logger.error(chalk.red(`Cannot create migration for ${System.TABLES_NAMES.get(i)}: 0 columns in information schema`))
-                continue
+                throw new ModularORMException(`Cannot create migration for ${System.TABLES_NAMES.get(i)}: 0 columns in information schema`)
             }
 
             const databaseColumns : ColumnT[] = [];
@@ -164,10 +171,10 @@ export class DatabaseUpdate {
                 databaseColumns.push({name, type, defaultValue, comment: b.columnComment ?? '', extra: b.extra, isNullable: b.isNullable })
             }
 
-            const column : string | undefined = System.TABLES_NAMES.get(i)
-            if (column) {
-                await this.absent(ormColumns, databaseColumns, column);
-                await this.editInDatabase(ormColumns, databaseColumns, column, { foreignKeys, uniqueConstraints, indexes }, primary)
+            const table : string | undefined = System.TABLES_NAMES.get(i)
+            if (table) {
+                await this.absent(ormColumns, databaseColumns, table);
+                await this.editInDatabase(ormColumns, databaseColumns, table, { foreignKeys, uniqueConstraints, indexes }, primary)
             }
 
         }
@@ -190,7 +197,19 @@ export class DatabaseUpdate {
                 await fs.writeFile(this.migrationFile, Array.from(this.migrations).join('\n'))
                 Logger.info(`Migrations wrote to ModularORM_migration.txt. To apply them, restart your application again.`)
             } catch (err) {
-                Logger.error(`Migrations were not created due to a file write error. Try selecting a different type.`)
+                throw new ModularORMException(`Migrations were not created due to a file write error. Try selecting a different type.`)
+            }
+        }
+
+        if (this.downMigrations.size !== 0) {
+            try {
+                await fs.writeFile(this.downMigrationFile, Array.from(this.downMigrations).join('\n'))
+                Logger.info(`Down-migrations wrote to ModularORM_down_migration.txt. To run them, rename the file to "ModularORM_migration.txt" and restart the application. IMPORTANT: Down migrations are not removed when the application is restarted until they are run. Before running migrations again, be sure to delete this file.`)
+            } catch (err) {
+                Logger.error(`IMPORTANT: Down migrations were not written to the file. All requests will be sent to the console below, be sure to save them`)
+                for (const i of this.downMigrations) {
+                    Logger.error(i)
+                }
             }
         }
 
@@ -199,10 +218,12 @@ export class DatabaseUpdate {
     private static async updateDatabase(ormParams: { table: string, collation: string, comment: string, row_format: string }, databaseParams: { table: string, collation: string, comment: string, row_format: string }) {
         if (ormParams.comment !== databaseParams.comment) {
             await this.query(`ALTER TABLE ${ormParams.table} COMMENT = '${ormParams.comment}'`);
+            await this.downQuery(`ALTER TABLE ${ormParams.table} COMMENT = '${databaseParams.comment}'`)
         }
 
         if (ormParams.row_format !== databaseParams.row_format) {
             await this.query(`ALTER TABLE ${ormParams.table} ROW_FORMAT = ${ormParams.row_format}`);
+            await this.query(`ALTER TABLE ${ormParams.table} ROW_FORMAT = ${databaseParams.row_format}`);
         }
 
         const charSetMap: { [key: string]: string } = {
@@ -223,6 +244,7 @@ export class DatabaseUpdate {
 
         if (ormParams.collation !== databaseParams.collation && ormParams.collation !== 'currency') {
             await this.query(`ALTER TABLE ${ormParams.table} CONVERT TO CHARACTER SET ${charSetMap[ormParams.collation] ?? 'utf8mb4'} COLLATE ${ormParams.collation}`);
+            await this.query(`ALTER TABLE ${ormParams.table} CONVERT TO CHARACTER SET ${charSetMap[databaseParams.collation] ?? 'utf8mb4'} COLLATE ${databaseParams.collation}`);
         }
 
     }
@@ -262,8 +284,22 @@ export class DatabaseUpdate {
                 columnSQL += ` COMMENT '${column.comment}'`
             }
 
+            let isRenamed : string | undefined = undefined;
+            for (const b of System.RENAMED_COLUMN) {
+                if (b.propertyKey === column.name) isRenamed = b.oldName;
+            }
+
+            if (isRenamed) {
+                await this.query(`ALTER TABLE ${table} CHANGE ${isRenamed} ${columnSQL}`)
+                await this.downQuery(`ALTER TABLE ${table} CHANGE ${column.name} ${isRenamed} ${columnSQL.split(' ').slice(1).join(' ')}`)
+                continue;
+            }
+
             await this.query(`ALTER TABLE ${table} ADD ${columnSQL}`)
-            if (column.index) await this.query(`CREATE INDEX idx_${column.name} ON ${table}(${column.name})`)
+            await this.downQuery(`ALTER TABLE ${table} DROP COLUMN ${column.name}`)
+            if (column.index) {
+                await this.query(`CREATE INDEX idx_${column.name} ON ${table}(${column.name})`)
+            }
             if (column.foreignKey) {
                 await this.query(`ALTER TABLE ${table} ADD FOREIGN KEY (\`${column.name}\`) REFERENCES ${column.foreignKey.referencedTable}(${column.foreignKey.referencedColumn}) ${column.onDeleteForeign ? `ON DELETE ${column.onDeleteForeign}` : ""} ${column.onUpdateForeign ? `ON UPDATE ${column.onUpdateForeign}` : ""}`);
             }
@@ -276,7 +312,11 @@ export class DatabaseUpdate {
     }
 
     private static async query(sql: string) {
-        this.migrations.add(sql)
+        this.migrations.add(sql);
+    }
+
+    private static async downQuery(sql: string) {
+        this.downMigrations.add(sql);
     }
 
     private static async absentInOrm(ormColumns: (ColumnT & ORMColumn)[], databaseColumns: ColumnT[], table: string) {
@@ -284,8 +324,65 @@ export class DatabaseUpdate {
         if (absentInORM.length < 1) return;
 
         for (const i of absentInORM) {
+            let isRenamed : boolean = false;
+            for (const b of System.RENAMED_COLUMN) {
+                if (b.oldName === i) isRenamed = true;
+            }
+            if (isRenamed) continue
             await this.query(`ALTER TABLE ${table} DROP COLUMN ${i}`)
+            const column : (ColumnT & ORMColumn) | undefined = ormColumns.find(obj => obj.name == i)
+            if (!column) continue;
+
+            let columnSQL = `${column.name} ${column.type.type}`;
+
+            if (column.autoIncrement) columnSQL += " AUTO_INCREMENT PRIMARY KEY";
+            if (column.notNull) columnSQL += " NOT NULL";
+
+            if (column.defaultValue !== null) {
+                if (column.defaultValue instanceof SqlFunctions) columnSQL += ` DEFAULT ${column.defaultValue.name}`;
+                else if (typeof column.defaultValue === "boolean") columnSQL += ` DEFAULT ${column.defaultValue}`
+                else columnSQL += ` DEFAULT '${column.defaultValue}'`;
+            }
+
+            if (column.onUpdate !== null) {
+                if (column.onUpdate instanceof SqlFunctions) columnSQL += ` ON UPDATE ${column.onUpdate.name}`
+                else columnSQL += ` ON UPDATE '${column.onUpdate}'`
+            }
+
+            if (column.comment) columnSQL += ` COMMENT '${column.comment}'`
+
+            await this.downQuery(`ALTER TABLE ${table} ADD ${columnSQL}`)
+            if (column.index) await this.downQuery(`CREATE INDEX idx_${column.name} ON ${table}(${column.name})`)
+            if (column.foreignKey) await this.downQuery(`ALTER TABLE ${table} ADD FOREIGN KEY (\`${column.name}\`) REFERENCES ${column.foreignKey.referencedTable}(${column.foreignKey.referencedColumn}) ${column.onDeleteForeign ? `ON DELETE ${column.onDeleteForeign}` : ""} ${column.onUpdateForeign ? `ON UPDATE ${column.onUpdateForeign}` : ""}`);
+            if (column.unique) await this.downQuery(`ALTER TABLE ${table} ADD UNIQUE idx_${column.name} (${column.name})`);
         }
+    }
+
+    private static async handleJoinTableAndManyToMany(module: Module, tableName: string) {
+        const schema : ModuleSchema = new ModuleSchema(module as any);
+        const manyToManyRelations : Relation[] = schema.getManyToManyRelations();
+        for (const i of manyToManyRelations) {
+            let joinTable : { table: string, joinColumn: string, inverseJoinColumn: string, isCurrentIsJoin: boolean }
+            try {
+                joinTable = schema.getJoinTableName(i);
+            } catch (err) {
+                throw new ModularORMException('An error occurred while processing ManyToMany relationships and JOIN tables. ModularORM does not store screenshots of tables in the database, so it is not possible to restore the context. Please delete the JOIN table manually.')
+            }
+            const results : InformationSchemaColumnsResult[] = await InformationSchemaColumns.select({
+                TABLE_SCHEMA: (System.DATABASE_CONNECTION_DATA as DatabaseParams).database,
+                TABLE_NAME: joinTable.table
+            })
+            if (results.length !== 2) throw new ModularORMException(`An error occurred while processing the JOIN table. Please check ${joinTable.table} manually: it should have 2 columns`)
+            if (results[0].columnName !== joinTable.joinColumn) {
+                await this.query(`ALTER TABLE ${joinTable.table} CHANGE ${results[0].columnName} ${joinTable.joinColumn} INTEGER`)
+                await this.downQuery(`ALTER TABLE ${joinTable.table} CHANGE ${joinTable.joinColumn} ${results[0].columnName} INTEGER`)
+            }
+            if (results[1].columnName !== joinTable.inverseJoinColumn) {
+                await this.query(`ALTER TABLE ${joinTable.table} CHANGE ${results[1].columnName} ${joinTable.inverseJoinColumn} INTEGER`)
+                await this.downQuery(`ALTER TABLE ${joinTable.table} CHANGE ${joinTable.inverseJoinColumn} ${results[1].columnName} INTEGER`)
+            }
+        }
+
     }
 
     private static async editInDatabase(
@@ -301,6 +398,7 @@ export class DatabaseUpdate {
 
             let isChanged : boolean = false;
             let additionalSqls : Map<string, 'before' | 'after'> = new Map();
+            let downAdditionalSqls : Map<string, 'before' | 'after'> = new Map();
 
             let autoIncrement : string = ormColumn.autoIncrement ? 'AUTO_INCREMENT' : '';
             let type : string = ormColumn.type.type;
@@ -325,10 +423,12 @@ export class DatabaseUpdate {
             if (ormColumn.autoIncrement && primaryKey !== ormColumn.name) {
                 if (primaryKey !== '') additionalSqls.set(`ALTER TABLE ${table} DROP PRIMARY KEY`, 'before');
                 autoIncrement = 'AUTO_INCREMENT'
+                downAdditionalSqls.set(`ALTER TABLE ${table} DROP PRIMARY KEY`, 'after');
                 additionalSqls.set(`ALTER TABLE ${table} ADD PRIMARY KEY (${ormColumn.name})`, 'after');
                 isChanged = true;
             } else if (!ormColumn.autoIncrement && primaryKey === ormColumn.name) {
                 additionalSqls.set(`ALTER TABLE ${table} DROP PRIMARY KEY`, 'before')
+                downAdditionalSqls.set(`ALTER TABLE ${table} ADD PRIMARY KEY (${ormColumn.name})`, 'after');
                 autoIncrement = '';
                 isChanged = true;
             }
@@ -337,7 +437,7 @@ export class DatabaseUpdate {
                 isChanged = true;
             }
 
-            if ((ormColumn.isNullable === 'YES' && dbColumn.isNullable === 'NO') || (ormColumn.isNullable === 'NO' && dbColumn.isNullable === "YES")) {
+            if ((!ormColumn.notNull && dbColumn.isNullable === 'NO') || (ormColumn.notNull && dbColumn.isNullable === "YES")) {
                 if (!ormColumn.autoIncrement) isChanged = true;
             }
 
@@ -357,6 +457,7 @@ export class DatabaseUpdate {
             if (thisDefaultValue !== String(dbColumn.defaultValue)) {
                 if ((thisDefaultValue === 'null' || thisDefaultValue === null) && String(dbColumn.defaultValue) !== "") {
                     additionalSqls.set(`ALTER TABLE ${table} ALTER COLUMN ${ormColumn.name} DROP DEFAULT`, 'before');
+                    downAdditionalSqls.set(`ALTER TABLE ${table} ALTER COLUMN ${ormColumn.name} SET DEFAULT '${dbColumn.defaultValue}'`, 'after');
                 } else {
                     isChanged = true
                 }
@@ -364,24 +465,29 @@ export class DatabaseUpdate {
 
             if (ormColumn.index && !dbConstraints.indexes.has(`idx_${ormColumn.name}`)) {
                 additionalSqls.set(`CREATE INDEX idx_${ormColumn.name} ON ${table}(${ormColumn.name})`, 'before');
+                downAdditionalSqls.set(`ALTER TABLE ${table} DROP INDEX idx_${ormColumn.name}`, 'before');
             }
 
             if (!ormColumn.index && dbConstraints.indexes.has(`idx_${ormColumn.name}`)) {
                 additionalSqls.set(`ALTER TABLE ${table} DROP INDEX idx_${ormColumn.name}`, 'before');
+                downAdditionalSqls.set(`CREATE INDEX idx_${ormColumn.name} ON ${table}(${ormColumn.name})`, 'before');
             }
 
             if (ormColumn.unique && !dbConstraints.uniqueConstraints.has(`unique_${ormColumn.name}`)) {
                 additionalSqls.set(`ALTER TABLE ${table} ADD UNIQUE unique_${ormColumn.name} (${ormColumn.name})`, 'before');
+                downAdditionalSqls.set(`ALTER TABLE ${table} DROP INDEX unique_${ormColumn.name}`, 'before');
             }
 
             if (!ormColumn.unique && dbConstraints.uniqueConstraints.has(`unique_${ormColumn.name}`)) {
                 additionalSqls.set(`ALTER TABLE ${table} DROP INDEX unique_${ormColumn.name}`, 'before');
+                downAdditionalSqls.set(`ALTER TABLE ${table} ADD UNIQUE unique_${ormColumn.name} (${ormColumn.name})`, 'before');
             }
 
             const fkInDB = dbConstraints.foreignKeys.get(ormColumn.name);
 
             if (!ormColumn.foreignKey && fkInDB) {
                 additionalSqls.set(`ALTER TABLE ${table} DROP FOREIGN KEY ${fkInDB.constraintName}`, 'before');
+                additionalSqls.set(`ALTER TABLE ${table} ADD CONSTRAINT ${fkInDB.constraintName} FOREIGN KEY (${ormColumn.name}) REFERENCES ${fkInDB.table}(${fkInDB.column}) ${fkInDB.onDelete? `ON DELETE ${fkInDB.onDelete}` : ""} ${fkInDB.onUpdate ? `ON UPDATE ${fkInDB.onUpdate}` : ""}`, 'before');
             }
 
             if (fkInDB && ormColumn.foreignKey) {
@@ -396,19 +502,45 @@ export class DatabaseUpdate {
 
                     const fkName = `fk_${table}_${ormColumn.name}`;
                     additionalSqls.set(`ALTER TABLE ${table} ADD CONSTRAINT ${fkName} FOREIGN KEY (${ormColumn.name}) REFERENCES ${ormColumn.foreignKey.referencedTable}(${ormColumn.foreignKey.referencedColumn}) ${ormColumn.onDeleteForeign ? `ON DELETE ${ormColumn.onDeleteForeign}` : ""} ${ormColumn.onUpdateForeign ? `ON UPDATE ${ormColumn.onUpdateForeign}` : ""}`, 'before');
+                    downAdditionalSqls.set(`ALTER TABLE ${table} DROP FOREIGN KEY ${fkName}`, 'before');
                 }
             } else if (ormColumn.foreignKey) {
                 const fkName = `fk_${table}_${ormColumn.name}`;
                 additionalSqls.set(`ALTER TABLE ${table} ADD CONSTRAINT ${fkName} FOREIGN KEY (${ormColumn.name}) REFERENCES ${ormColumn.foreignKey.referencedTable}(${ormColumn.foreignKey.referencedColumn}) ${ormColumn.onDeleteForeign ? `ON DELETE ${ormColumn.onDeleteForeign}` : ""} ${ormColumn.onUpdateForeign ? `ON UPDATE ${ormColumn.onUpdateForeign}` : ""}`, 'before');
+                downAdditionalSqls.set(`ALTER TABLE ${table} DROP FOREIGN KEY ${fkName}`, 'before');
             }
 
             for (const i of additionalSqls) {
                 if (i[1] === 'before') await this.query(i[0])
             }
 
-            if (isChanged) await this.query(`ALTER TABLE ${table} MODIFY COLUMN ${ormColumn.name} ${type} ${nullable} ${defaultValue} ${autoIncrement} ${comment}`)
+            for (const i of downAdditionalSqls) {
+                if (i[1] === 'before') await this.downQuery(i[0])
+            }
+
+            if (isChanged) {
+                const oldType = dbColumn.type.type;
+                const oldNullable = dbColumn.isNullable === 'NO' ? 'NOT NULL' : 'NULL';
+                const oldComment = dbColumn.comment ? `COMMENT '${dbColumn.comment}'` : `COMMENT ''`;
+
+                let oldDefault = '';
+                if (typeof dbColumn.defaultValue !== 'undefined' && dbColumn.defaultValue !== null && dbColumn.defaultValue !== '') {
+                    oldDefault = `DEFAULT '${dbColumn.defaultValue}'`;
+                }
+
+                const oldAutoIncrement = dbColumn.extra?.includes('auto_increment') ? 'AUTO_INCREMENT' : '';
+
+                const reverseAlter = `ALTER TABLE ${table} MODIFY COLUMN ${ormColumn.name} ${oldType} ${oldNullable} ${oldDefault} ${oldAutoIncrement} ${oldComment}`;
+
+                await this.query(`ALTER TABLE ${table} MODIFY COLUMN ${ormColumn.name} ${type} ${nullable} ${defaultValue} ${autoIncrement} ${comment}`);
+                await this.downQuery(reverseAlter);
+            }
 
             for (const i of additionalSqls) {
+                if (i[1] === 'after') await this.query(i[0])
+            }
+
+            for (const i of downAdditionalSqls) {
                 if (i[1] === 'after') await this.query(i[0])
             }
 

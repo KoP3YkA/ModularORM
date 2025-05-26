@@ -63,6 +63,14 @@ export class ColumnType extends BaseEnumClass {
      * Used for json-objects
      */
     public static JSON : ColumnType = new ColumnType('JSON');
+    public static BIGINT : ColumnType = new ColumnType('BIGINT');
+    public static FLOAT : ColumnType = new ColumnType('FLOAT');
+    public static DOUBLE : ColumnType = new ColumnType('DOUBLE');
+    public static DECIMAL = (precision: number, scale: number) =>
+        new ColumnType(`DECIMAL(${precision},${scale})`);
+    public static BLOB : ColumnType = new ColumnType('BLOB');
+    public static TIME : ColumnType = new ColumnType('TIME');
+    public static YEAR : ColumnType = new ColumnType('YEAR');
 
     // -------------------------------------------------------
 
@@ -70,26 +78,41 @@ export class ColumnType extends BaseEnumClass {
         public type : string,
     ) {super();}
 
-    public static getByName(name: string) : ColumnType | null {
-        if (name.startsWith('varchar(')) {
-            const match = name.match(/^varchar\((\d+)\)$/);
+    public static getByName(name: string): ColumnType | null {
+        const lower = name.toLowerCase();
+
+        if (lower.startsWith('varchar(')) {
+            const match = lower.match(/^varchar\((\d+)\)$/);
             if (match) {
-                const num = parseInt(match[1], 10);
-                return this.VARCHAR(num);
+                return this.VARCHAR(parseInt(match[1], 10));
             }
         }
 
-        switch (name) {
-            case 'json': return this.JSON;
+        if (lower.startsWith('decimal(')) {
+            const match = lower.match(/^decimal\((\d+),(\d+)\)$/);
+            if (match) {
+                return this.DECIMAL(parseInt(match[1], 10), parseInt(match[2], 10));
+            }
+        }
+
+        switch (lower) {
             case 'text': return this.TEXT;
-            case 'int': return this.INTEGER;
+            case 'int':
+            case 'integer': return this.INTEGER;
+            case 'bigint': return this.BIGINT;
+            case 'float': return this.FLOAT;
+            case 'double': return this.DOUBLE;
             case 'datetime': return this.DATETIME;
             case 'timestamp': return this.TIMESTAMP;
             case 'date': return this.DATE;
+            case 'time': return this.TIME;
+            case 'year': return this.YEAR;
+            case 'json': return this.JSON;
+            case 'blob': return this.BLOB;
             case 'tinyint(1)': return this.BOOLEAN;
+            case 'boolean': return this.BOOLEAN;
             default: return null;
         }
-
     }
 
 }

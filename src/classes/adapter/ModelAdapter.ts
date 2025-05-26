@@ -7,18 +7,27 @@ import {SelectQueryParams} from "../../interfaces/SelectQueryParams";
 import {SelectBuilder} from "../base/SelectBuilder";
 import {WhereBuilder} from "../base/WhereBuilder";
 import {UpdateBuilder} from "../base/UpdateBuilder";
+import {ClassConstructor} from "../../types/ClassConstructor";
 
 export class ModelAdapter<B extends Module>{
 
     public constructor(
-        public module : { new (...args: any[]) : B }
+        public module : ClassConstructor<B>
     ) {}
 
     private getWhereBuilder(where: { [key: string] : any }) : WhereBuilder {
         const whereBuilder : WhereBuilder = new WhereBuilder();
 
         for (const i of Object.keys(where)) {
-            whereBuilder.equalAnd(i, where[i])
+            const value = where[i]
+            if (Array.isArray(value)) {
+                if (value.length === 1) value.forEach(obj => whereBuilder.equalOr(i, obj))
+                else {
+                    const subbuilder = new WhereBuilder()
+                    value.forEach(obj => subbuilder.equalOr(i, obj))
+                    whereBuilder.addSubQuery(subbuilder)
+                }
+            } else whereBuilder.equalAnd(i, value)
         }
 
         return whereBuilder
@@ -36,8 +45,7 @@ export class ModelAdapter<B extends Module>{
         builder.setType(QueryType.INSERT)
         builder.setInsert(insert)
 
-        await builder.build().execute();
-
+        return await builder.build().execute();
     }
 
     public async select<T extends Object>(ctor: new (...args: any[]) => T, where: { [key: string] : any }, params?: Partial<SelectQueryParams<B>>) : Promise<T[]> {

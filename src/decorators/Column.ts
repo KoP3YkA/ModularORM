@@ -1,6 +1,7 @@
 import {ColumnType} from "../classes/base/ColumnType";
 import {ColumnParams} from "../interfaces/ColumnParams";
 import 'reflect-metadata'
+import {Decorator} from "../types/Decorator";
 
 /**
  * Column decorator.
@@ -20,8 +21,8 @@ import 'reflect-metadata'
  *
  * @returns A property decorator that defines default metadata for the class property.
  */
-export function Column(params: Partial<ColumnParams>) {
-    return function (target: any, propertyKey: string) {
+export function Column(params: Partial<ColumnParams>) : Decorator {
+    return function (target: any, propertyKey: string) : void {
         const existingColumns = Reflect.getMetadata("columns", target.constructor) || [];
 
         existingColumns.push({

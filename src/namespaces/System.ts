@@ -1,11 +1,8 @@
 
 import {DatabaseParams} from "../interfaces/DatabaseParams";
 import {TableCreateParams} from "../interfaces/TableCreateParams";
-
-interface Executor {
-    prototype: any,
-    method: string
-}
+import {Relation} from "../interfaces/Relation";
+import {IJoinTable} from "../interfaces/JoinTableInterface";
 
 export namespace System {
 
@@ -25,7 +22,13 @@ export namespace System {
     export let DATABASE_CONNECTION_DATA : DatabaseParams;
     export const TABLES_PRIORITY : Map<string, number> = new Map()
     export const TABLES_SETTINGS : Map<string, TableCreateParams> = new Map();
+    export const SOFT_DELETE_COLUMNS : Map<any, string> = new Map();
+    export const BUILD_SCHEMA : Map<Function, Partial<TableCreateParams>> = new Map();
+    export const JOIN_TABLES : Set<IJoinTable> = new Set();
+    export const RENAMED_COLUMN : Set<{ target: any, propertyKey: string, oldName: string }> = new Set();
 
-
+    export const MANY_TO_ONE : Set<Relation> = new Set();
+    export const ONE_TO_MANY : Set<Relation> = new Set();
+    export const MANY_TO_MANY : Set<Relation> = new Set();
 
 }

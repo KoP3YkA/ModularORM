@@ -13,7 +13,6 @@ export function Result(columnName?: string): PropertyDecorator {
     return (target, propertyKey) => {
         const column: string = columnName ?? String(propertyKey);
 
-        // Индивидуальное сопоставление поля
         Reflect.defineMetadata(
             'resultAnnotations-mapping',
             column,
@@ -21,7 +20,6 @@ export function Result(columnName?: string): PropertyDecorator {
             propertyKey
         );
 
-        // Добавление в общий список
         const existingMappings: Array<{ propertyKey: string, columnName: string }> =
             Reflect.getMetadata('resultAnnotations-mapping-list', target) || [];
 

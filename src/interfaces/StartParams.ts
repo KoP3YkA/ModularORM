@@ -50,4 +50,14 @@ export interface StartParams extends DatabaseParams {
      * Type of connection. Default - pool
      */
     connectionType?: 'connection' | 'pool';
+
+    /**
+     * When errors occur, methods will return default values.
+     */
+    returnsNullWhenErrors?: boolean;
+
+    /**
+     * Before creating tables, it will check if they exist in the database. If false is specified, CREATE TABLE IF NOT EXISTS will be used.
+     */
+    checkTablesExists?: boolean;
 }

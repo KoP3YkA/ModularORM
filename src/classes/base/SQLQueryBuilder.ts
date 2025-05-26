@@ -50,6 +50,11 @@ export class SQLQueryBuilder {
                 }
                 sql += ` ${select.selects.join(', ')} FROM`;
                 sql = this.addTable(builder, sql);
+
+                if (builder.join) {
+                    sql += ` ${builder.join.toQuery()}`;
+                }
+
                 break;
             }
             case QueryType.DROP: {
