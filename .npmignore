@@ -5,6 +5,7 @@
 /playground
 /example
 /ignore
+/coverage
 
 tsconfig.json
 tsup.config.ts
