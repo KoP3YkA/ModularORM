@@ -1,3 +1,5 @@
+import * as dotenv from 'dotenv'
+dotenv.config({ override: true })
 import {ModularORM} from "../src";
 import {Courses} from "./setup/Courses";
 import {Logs} from "./setup/Logs";
@@ -22,13 +24,13 @@ export const setupOrm = async () => {
 
     if (isInit) return;
     await ModularORM.getInstance().start({
-        host: 'localhost',
-        user: 'root',
-        password: '1',
-        database: 'orm',
-        port: 3306,
+        host: process.env.MYSQL_HOST || '127.0.0.1',
+        user: process.env.MYSQL_USER || 'root',
+        password: process.env.MYSQL_PASSWORD || '',
+        database: process.env.MYSQL_DATABASE || 'test',
+        port: parseInt(process.env.MYSQL_PORT || '3306'),
         useCache: true,
         migrations: 'file',
-    })
+    });
     isInit = true;
 }

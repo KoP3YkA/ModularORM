@@ -11,7 +11,7 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "tsup",
-    "test": "jest"
+    "test": "jest --coverage"
   },
   "keywords": [
     "orm",
@@ -24,6 +24,7 @@
   "devDependencies": {
     "@types/jest": "^29.5.14",
     "@types/node": "^22.15.21",
+    "dotenv": "^16.5.0",
     "jest": "^29.7.0",
     "ts-jest": "^29.3.4",
     "tsup": "^8.3.6",

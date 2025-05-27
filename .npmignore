@@ -4,8 +4,10 @@
 /test
 /playground
 /example
+/ignore
 
 tsconfig.json
 tsup.config.ts
 jest.config.js
 last-readme.md
+.env
