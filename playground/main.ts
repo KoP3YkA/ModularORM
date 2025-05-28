@@ -4,7 +4,7 @@ import {
     Column,
     ColumnType,
     ModularORM,
-    Module, Table,
+    Module, QueryBuilder, Table, TransformFactory, ValidatorFactory,
 } from "../src";
 import {NamedTable} from "../src/decorators/NamedTable";
 import {Repository} from "../src/classes/base/Repository";
@@ -12,6 +12,7 @@ import {ManyToMany} from "../src/decorators/ManyToMany";
 import {JoinTable} from "../src/decorators/JoinTable";
 import {RenamedColumn} from "../src/decorators/RenamedColumn";
 import {log} from "node:util";
+import {UsersDTO} from "../test/setup/Users";
 
 @Table()
 @NamedTable('playground_table_one')

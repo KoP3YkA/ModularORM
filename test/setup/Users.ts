@@ -1,4 +1,4 @@
-import {AutoIncrementId, Column, ColumnType, Module, NamedTable, Result, Table, ToNumber} from "../../src";
+import {AutoIncrementId, Column, ColumnType, Module, NamedTable, Result, Table, ToNumber, Validate} from "../../src";
 
 @Table()
 @NamedTable('users')

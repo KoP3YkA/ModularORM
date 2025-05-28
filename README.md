@@ -29,3 +29,5 @@ Key Features
 And more. You can see examples in [GitHub repository](https://github.com/KoP3YkA/ModularORM/tree/main/example)
 
 ModularORM is ideal for developers who want a clean, type-safe ORM experience with full control and minimal overhead.
+
+## [Documentation](https://github.com/KoP3YkA/ModularORM/wiki)
