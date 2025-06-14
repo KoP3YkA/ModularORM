@@ -24,6 +24,8 @@ import {QueryType} from "./QueryType";
 import any = jasmine.any;
 import {ModularORMException} from "./ModularORMException";
 import {HandleExceptions} from "../../decorators/HandleExceptions";
+import {TableFieldStrings} from "../../types/TableFieldStrings";
+import {WhereAdapter} from "../adapter/WhereAdapter";
 
 export class Repository<T extends Module, B extends Object = T> {
     private moduleClassSchema : ModuleSchema;
@@ -382,15 +384,16 @@ export class Repository<T extends Module, B extends Object = T> {
     }
 
     @HandleExceptions(null)
-    public async clone(where: WhereBlock<T>, edit: TableFieldBlock<T>) : Nothing {
-        const select : B[] = await this.find(where);
-        for (const i of select) {
-            const clone = { ...i, ...edit };
-            const columns = Reflect.getMetadata("columns", this.moduleClass) || [];
-            let primaryKey : string | undefined = (columns as any[]).find(obj => obj.params.autoIncrement === true)?.propertyKey;
-            if (primaryKey && (clone as any)[primaryKey]) delete (clone as any)[primaryKey]
-            await this.insert(clone)
-        }
+    public async clone(edit: TableFieldBlock<T>, where: WhereBlock<T>, params?: AdditionalParams<T>, insert?: TableFieldStrings<T>) : Nothing {
+        const schema : ModuleSchema = this.moduleClassSchema;
+        const columns : string = schema.getAllColumnsWithoutAutoIncrement(insert as string[]);
+        const name : string = schema.getName();
+        const cloneColumns : string = schema.getAllColumnsToClone<T>(edit, insert as string[]);
+        const whereSql = WhereAdapter.adapt<T>(where, params);
+        await new DatabaseAPI().databaseSetQuery({
+            sql: `INSERT INTO ${name} (${columns}) SELECT ${cloneColumns} FROM ${name} WHERE ${whereSql.sql}`,
+            params: whereSql.values
+        })
     }
 
     @HandleExceptions(null)

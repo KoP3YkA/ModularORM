@@ -1,0 +1,1 @@
+export type TableFieldStrings<T> = (keyof T)[]

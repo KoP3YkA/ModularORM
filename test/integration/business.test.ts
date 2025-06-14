@@ -18,6 +18,7 @@ beforeEach(async () => {
 
 describe('Base business logic', () => {
     test('Empty database size', async () => {
+        await usersRepository.deleteAll();
         const results = await usersRepository.find();
 
         expect(results.length).toBe(0)
@@ -51,6 +52,7 @@ describe('Base business logic', () => {
         }
 
         const validateResults = await dtoUsersRepository.find({}, { order: { id: 'DESC' } })
+        console.log(validateResults)
         expect(validateResults[0].userName).toBe('Liza')
 
         const resultById = await dtoUsersRepository.findByAutoincrementKey(1)
@@ -109,7 +111,7 @@ describe('Base business logic', () => {
 
     test('Clone', async () => {
         await usersRepository.insert({ name: 'Kamilla', money: '30' });
-        await usersRepository.clone({ name: 'Kamilla' }, { name: 'Boris' });
+        await usersRepository.clone({ name: 'Boris' }, { name: 'Kamilla' }, {limit: 1});
 
         const results = await dtoUsersRepository.find();
 

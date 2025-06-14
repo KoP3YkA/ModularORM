@@ -6,6 +6,9 @@ import {ClassConstructor} from "../../types/ClassConstructor";
 import {Relation} from "../../interfaces/Relation";
 import {IJoinTable} from "../../interfaces/JoinTableInterface";
 import {ModularORMException} from "../base/ModularORMException";
+import {TableFieldBlock} from "../../types/TableFieldBlock";
+import {QueryIs} from "../base/QueryIs";
+import {SqlFunctions} from "../base/SqlFunctions";
 
 export class ModuleSchema {
 
@@ -50,6 +53,35 @@ export class ModuleSchema {
             }
         }
         return null;
+    }
+
+    public getAllColumnsWithoutAutoIncrement(or?: string[]) : string {
+        if (or) return or.join(', ')
+        return this.getColumns()
+            .filter(obj => !obj.params.autoIncrement)
+            .map(obj => obj.propertyKey)
+            .join(', ')
+    }
+
+    public getAllColumnsToClone<T extends Module>(edit: TableFieldBlock<T>, or?: string[]) {
+        return this.getColumns()
+            .filter(obj => !obj.params.autoIncrement)
+            .filter(obj => {
+                if (or) return or.includes(obj.propertyKey)
+                else return obj.propertyKey
+            })
+            .map(obj => {
+                const propertyKey : string = obj.propertyKey;
+                if (Object.keys(edit).includes(propertyKey)) {
+                    const res = edit[propertyKey as keyof T]
+                    if (typeof res === "string") return `"${res}"`
+                    if (res instanceof QueryIs) return res.tag;
+                    if (res instanceof SqlFunctions) return res.name;
+                    return res
+                }
+                return propertyKey;
+            })
+            .join(', ')
     }
 
     public getSoftDeleteColumn() : OrNull<string> {

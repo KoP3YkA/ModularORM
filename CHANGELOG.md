@@ -17,3 +17,9 @@
 - [+] Advanced exceptions system
 - [/] Fix some migration bugs
 - [/] Migrations are now done via options when creating @Table, rather than a separate decorator
+
+## 0.3.3 | 14.06.2025
+
+- [+] Added type TableFieldStrings
+- [+] Added exception description while creating the table
+- [/] Improved Repository#clone method. Before: SELECT and INSERT queries. Now: INSERT INTO ... SELECT ... in one query

@@ -85,6 +85,7 @@ export * from './types/LoadingType'
 export * from './types/ManyToManyKeys'
 export * from './types/TableFieldBlock'
 export * from './types/WhereBlock'
+export * from './types/TableFieldStrings'
 
 // ---------- NAMESPACES ----------
 export * from './namespaces/DefaultColumn'

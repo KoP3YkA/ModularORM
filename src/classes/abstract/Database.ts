@@ -185,7 +185,7 @@ export abstract class Database {
                 const duration = endTime - startTime;
                 Logger.info(chalk.green('Executed table ') + chalk.yellowBright(tableName) + chalk.green(' in ') + chalk.yellowBright(duration + 'ms'))
             } catch (err) {
-                throw new ModularORMException(`Error when executing table ${tableName}. Table didnt created`)
+                throw new ModularORMException(`Error when executing table ${tableName}. Table didnt created:\n${err}`)
             }
         }
 
