@@ -23,6 +23,8 @@ class CountResult {
 
 describe('Builder tests', () => {
     test('Select count', async () => {
+        await usersRepository.deleteAll();
+
         await usersRepository.insert({ name: 'Elena', money: '30000' })
         await usersRepository.insert({ name: 'Jenny', money: '4000' })
         await usersRepository.insert({ name: 'Artur', money: '7500' })

@@ -21,7 +21,6 @@ import {PropertyName} from "../adapter/GetPropertyName";
 import {Relation} from "../../interfaces/Relation";
 import {ManyToManyKeys} from "../../types/ManyToManyKeys";
 import {QueryType} from "./QueryType";
-import any = jasmine.any;
 import {ModularORMException} from "./ModularORMException";
 import {HandleExceptions} from "../../decorators/HandleExceptions";
 import {TableFieldStrings} from "../../types/TableFieldStrings";
@@ -54,23 +53,30 @@ export class Repository<T extends Module, B extends Object = T> {
                 relationsResult = await new ModelAdapter(referenceTable).select(referenceResult, {}, {});
             }
 
+            const relationMap = new Map<any, Object[]>();
+
+            const selfKey = new ModuleSchema(results[0] as any).getAutoincrementKeyByResult(this.moduleClass as any) ?? 'id';
+
+            for (const rel of relationsResult) {
+                const key = rel[referenceColumnName as keyof typeof rel];
+                if (!relationMap.has(key)) relationMap.set(key, []);
+                relationMap.get(key)!.push(rel);
+            }
+
             for (const b of results) {
-                b[i.propertyKey as keyof typeof b] = (
-                    relationsResult.filter(
-                        obj => {
-                            return obj[referenceColumnName as keyof typeof obj] ===
-                                ((b[((new ModuleSchema(b as any).getAutoincrementKeyByResult(this.moduleClass as any) ?? 'id')) as keyof typeof b]) as any)
-                        }
-                    )
-                ) as any;
+                const bKey = b[selfKey as keyof typeof b];
+                b[i.propertyKey as keyof typeof b] = relationMap.get(bKey) ?? ([] as any);
             }
         }
         return results;
     }
 
-    public async handleManyToManyRelations(results: B[], relations?: ((string | ClassConstructor<Module>)[]) | null, depth: number = 1) : Promise<B[]> {
-        const manyToManyRelations : Relation[] = this.resultClassSchema.getManyToManyRelations();
-
+    public async handleManyToManyRelations(
+        results: B[],
+        relations?: ((string | ClassConstructor<Module>)[]) | null,
+        depth: number = 1
+    ): Promise<B[]> {
+        const manyToManyRelations: Relation[] = this.resultClassSchema.getManyToManyRelations();
         if (depth <= 0) {
             for (const i of manyToManyRelations) {
                 for (const b of results) {
@@ -80,53 +86,65 @@ export class Repository<T extends Module, B extends Object = T> {
             return results;
         }
 
-        const newRelations : string[] = relations?.map(obj => {
-            if (typeof obj !== 'string') return new ModuleSchema(obj).getName();
-            return obj
-        }) ?? []
+        const newRelations: string[] = relations?.map(obj =>
+            typeof obj === 'string' ? obj : new ModuleSchema(obj).getName()
+        ) ?? [];
+
+        const selfKey = this.moduleClassSchema.getAutoincrementKeyByResult(this.moduleClass as any) ?? 'id';
+
+        const joinResultsMap = new Map<string, any[]>();
+        for (const i of manyToManyRelations) {
+            const { table } = this.moduleClassSchema.getJoinTableName(i);
+            if (!joinResultsMap.has(table)) {
+                const joinResults = await new DatabaseAPI().databaseGetQuery({ sql: `SELECT * FROM ${table}`, params: [] });
+                joinResultsMap.set(table, joinResults);
+            }
+        }
 
         for (const i of manyToManyRelations) {
-            const targetName = new ModuleSchema(i.table() as any).getName();
-            const referenceColumnName : string = PropertyName.getPropertyName(i.column);
-            const referenceTable : ClassConstructor<Module> = i.table() as ClassConstructor<Module>;
-            const referenceResult : ClassConstructor<Object> = i.result ? i.result() as ClassConstructor<Object> : referenceTable;
+            const moduleSchema = new ModuleSchema(i.table() as any);
+            const targetName = moduleSchema.getName();
+            const referenceTable: ClassConstructor<Module> = i.table() as ClassConstructor<Module>;
+            const referenceResult = (i.result ?? referenceTable) as ClassConstructor<Module>;
+            const referenceSchema = new ModuleSchema(referenceResult);
 
-            const manyToManyData = this.moduleClassSchema.getJoinTableName(i)
+            const referenceIdKey = referenceSchema.getAutoincrementKeyByResult(referenceTable) ?? 'id';
 
-            const joinResults : any[] = await new DatabaseAPI().databaseGetQuery({
-                sql: `SELECT * FROM ${manyToManyData.table}`,
-                params: []
-            })
-
-            let relationsResults : Object[] = []
-            if (i.loadType !== 'mixed' || newRelations.includes(targetName) || relations === null) {
-                relationsResults = await new ModelAdapter(referenceTable).select(referenceResult, {}, {})
-            }
-
-            await new Repository(referenceTable, referenceResult).handleManyToManyRelations(relationsResults as any, relations, depth - 1);
-
+            const manyToManyData = this.moduleClassSchema.getJoinTableName(i);
             const joinSelfKey = manyToManyData.isCurrentIsJoin ? manyToManyData.inverseJoinColumn : manyToManyData.joinColumn;
             const joinRefKey = manyToManyData.isCurrentIsJoin ? manyToManyData.joinColumn : manyToManyData.inverseJoinColumn;
 
-            const selfKey = this.moduleClassSchema.getAutoincrementKeyByResult(this.moduleClass as any) ?? 'id';
-            const referenceIdKey = new ModuleSchema(referenceResult).getAutoincrementKeyByResult(referenceTable) ?? 'id';
+            const joinResults = joinResultsMap.get(manyToManyData.table) ?? [];
+
+            let relationsResults: Object[] = [];
+            const shouldLoad = i.loadType !== 'mixed' || newRelations.includes(targetName) || relations === null;
+            if (shouldLoad) {
+                relationsResults = await new ModelAdapter(referenceTable).select(referenceResult, {}, {});
+            }
+
+            if (relationsResults.length > 0) {
+                await new Repository(referenceTable, referenceResult).handleManyToManyRelations(relationsResults as any, relations, depth - 1);
+            }
+
+            const relationsMap = new Map<any, any>();
+            for (const obj of relationsResults) {
+                relationsMap.set(obj[referenceIdKey as keyof typeof obj], obj);
+            }
 
             for (const b of results) {
                 const bId = b[selfKey as keyof typeof b];
-
                 const relatedIds = joinResults
                     .filter(jr => jr[joinSelfKey] === bId)
                     .map(jr => jr[joinRefKey]);
 
-                b[i.propertyKey as keyof typeof b] = (
-                    relationsResults.filter(
-                        obj => relatedIds.includes(
-                            obj[referenceIdKey as keyof typeof obj]
-                        )
-                    )
-                ) as any;
+                const related = relatedIds
+                    .map(id => relationsMap.get(id))
+                    .filter(Boolean);
+
+                b[i.propertyKey as keyof typeof b] = related as any;
             }
         }
+
         return results;
     }
 

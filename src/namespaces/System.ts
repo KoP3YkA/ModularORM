@@ -31,4 +31,6 @@ export namespace System {
     export const ONE_TO_MANY : Set<Relation> = new Set();
     export const MANY_TO_MANY : Set<Relation> = new Set();
 
+    export const MAPPING_CACHE = new Map<any, Array<{ propertyKey: string; columnName: string }>>();
+
 }

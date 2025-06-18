@@ -23,3 +23,7 @@
 - [+] Added type TableFieldStrings
 - [+] Added exception description while creating the table
 - [/] Improved Repository#clone method. Before: SELECT and INSERT queries. Now: INSERT INTO ... SELECT ... in one query
+
+### 0.3.4 | 18.06.2025
+
+- [/] Work has been carried out on optimizing relations and working with metadata. The execution of a find query with 1000 many-to-many relations and a depth of 10 was accelerated by 50%, reaching a record 99 milliseconds
