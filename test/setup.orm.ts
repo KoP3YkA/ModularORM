@@ -9,6 +9,7 @@ import {Students} from "./setup/Students";
 import {Users} from "./setup/Users";
 import {Posts} from "./setup/Posts";
 import {Comments} from "./setup/Comments";
+import {Benchmark} from "./setup/Benchmark";
 
 let isInit : boolean = false;
 
@@ -21,6 +22,7 @@ export const setupOrm = async () => {
     new Users();
     new Posts();
     new Comments();
+    new Benchmark();
 
     if (isInit) return;
     await ModularORM.getInstance().start({
