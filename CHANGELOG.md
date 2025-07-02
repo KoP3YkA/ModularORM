@@ -32,3 +32,7 @@
 ## 0.3.5 | 02.07.2025
 
 - [+] Added `logQueriesValues` option in `StartParam` that sends values of queries in logs
+
+## 0.3.51 | 02.07.2025
+
+- [/] Edited README.md, added logo
