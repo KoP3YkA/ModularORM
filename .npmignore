@@ -7,6 +7,10 @@
 /ignore
 /coverage
 /.github
+/images/contrubuting.png
+CONTRIBUTING.md
+CONTRIBUTING_ru.md
+README_ru.md
 
 tsconfig.json
 tsup.config.ts
