@@ -61,6 +61,9 @@ export class ModularORM {
         if (typeof databaseParams.checkTablesExists === 'boolean') Settings.checkTablesExists = databaseParams.checkTablesExists;
         else Settings.checkTablesExists = false;
 
+        if (typeof databaseParams.logQueriesValues === 'boolean') Settings.logQueriesValues = databaseParams.logQueriesValues;
+        else Settings.logQueriesValues = false;
+
         const params = this.pickDatabaseParams(databaseParams);
         Settings.databaseName = params.database;
 
