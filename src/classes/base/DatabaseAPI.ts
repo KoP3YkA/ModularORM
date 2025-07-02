@@ -32,7 +32,8 @@ export class DatabaseAPI extends Database {
             const [rows, _] : [ QueryResult, FieldPacket[] ] = await DatabaseAPI.connection.query(params.sql, params.params);
             const endTime : number = Date.now();
             Cache.delCache(params.sql, params.params);
-            Logger.info(chalk.green(`Executed query `) + chalk.yellowBright(params.sql) + chalk.green(` in `) + chalk.yellowBright(`${endTime - startTime}ms`) + chalk.green('. ') + chalk.yellowBright("affectedRows" in rows ? rows.affectedRows : 0) + chalk.green(' rows affected'));
+            const vls : string = Settings.logQueriesValues ? params.params.length === 0 ? chalk.green(". No values") : chalk.green(`. Values: ${params.params}`) : ""
+            Logger.info(chalk.green(`Executed query `) + chalk.yellowBright(params.sql) + chalk.green(` in `) + chalk.yellowBright(`${endTime - startTime}ms`) + chalk.green('. ') + chalk.yellowBright("affectedRows" in rows ? rows.affectedRows : 0) + chalk.green(' rows affected') + vls);
             if ("getConnection" in DatabaseAPI.connection) {
                 (await DatabaseAPI.connection.getConnection()).release()
             }
@@ -58,14 +59,15 @@ export class DatabaseAPI extends Database {
         try {
             const startTime : number = Date.now();
             const cache = Cache.getCache(params.sql, params.params);
+            const vls : string = Settings.logQueriesValues ? params.params.length === 0 ? chalk.green(". No values") : chalk.green(`. Values: ${params.params}`) : ""
             if (cache) {
                 const endTime : number = Date.now();
-                Logger.info(chalk.green('Got cache of query ') + chalk.yellowBright(params.sql) + chalk.green(` in `) + chalk.yellowBright(`${endTime-startTime}ms`))
+                Logger.info(chalk.green('Got cache of query ') + chalk.yellowBright(params.sql) + chalk.green(` in `) + chalk.yellowBright(`${endTime-startTime}ms`) + vls)
                 return cache;
             }
             [rows, fields] = await DatabaseAPI.connection.query(params.sql, params.params);
             const endTime : number = Date.now();
-            Logger.info(chalk.green('Executed query ') + chalk.yellowBright(params.sql) + chalk.green(` in `) + chalk.yellowBright(`${endTime-startTime}ms`))
+            Logger.info(chalk.green('Executed query ') + chalk.yellowBright(params.sql) + chalk.green(` in `) + chalk.yellowBright(`${endTime-startTime}ms`) + vls)
             if (this.checkUseCache(params.useCache)) Cache.setCache(params.sql, params.params, rows, params.cacheTTL)
         } catch (err) {
             throw new ModularORMException(`Error when executing GET query:\n${err}`)

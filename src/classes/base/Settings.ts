@@ -11,5 +11,6 @@ export class Settings {
     public static returnsNullWhenError: boolean;
     public static checkTablesExists: boolean;
     public static databaseName: string;
+    public static logQueriesValues: boolean;
 
 }

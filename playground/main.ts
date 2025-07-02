@@ -53,29 +53,18 @@ new Promise(async (re, rj) => {
         password: '1',
         database: 'orm',
         port: 3306,
-        logs: false,
+        logs: true,
         useCache: true,
-        checkTablesExists: true
+        checkTablesExists: true,
+        logQueriesValues: true
     })
 
     const coursesRepository = new Repository(Courses);
     const studentsRepository = new Repository(Students);
 
-    // await coursesRepository.deleteAllManyToManyRelations("students")
-    // await coursesRepository.deleteAll()
-    // await studentsRepository.deleteAll()
-    //
-    // for (let i = 0; i < 999; i++) {
-    //     await coursesRepository.insert({ course: 'somename' })
-    //     const course = new Courses();
-    //     course.id = 1;
-    //     await studentsRepository.insert({ user: 'some', courses: [course] })
-    // }
-
-    const startTime = new Date()
-    const results = await coursesRepository.find({ id: 1 }, { relations: [Students, Courses], depth: 10 });
-    console.log(results)
-    const endTime = new Date();
-    console.log(`${endTime.getTime() - startTime.getTime()} ms`)
+    await studentsRepository.deleteAllManyToManyRelations("courses");
+    await studentsRepository.deleteAll();
+    await studentsRepository.find();
+    await studentsRepository.find({ id: [1, 2] });
 
 })

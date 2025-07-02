@@ -1,7 +1,7 @@
 import {AutoIncrementId, Column, ColumnType, ManyToMany, Module, NamedTable, Table} from '../../src'
 import {Students} from "./Students";
 
-@Table()
+@Table({ priority: 999 })
 @NamedTable('courses')
 export class Courses extends Module {
 

@@ -60,4 +60,9 @@ export interface StartParams extends DatabaseParams {
      * Before creating tables, it will check if they exist in the database. If false is specified, CREATE TABLE IF NOT EXISTS will be used.
      */
     checkTablesExists?: boolean;
+
+    /**
+     * Do send values of queries in logs?
+     */
+    logQueriesValues?: boolean;
 }

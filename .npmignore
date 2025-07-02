@@ -6,6 +6,7 @@
 /example
 /ignore
 /coverage
+/.github
 
 tsconfig.json
 tsup.config.ts

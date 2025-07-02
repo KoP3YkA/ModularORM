@@ -1,7 +1,7 @@
 import {AutoIncrementId, Column, ColumnType, Module, NamedTable, OneToMany, Result, Table, ToNumber} from '../../src'
 import {Comments} from "./Comments";
 
-@Table()
+@Table({ priority: 1000 })
 @NamedTable('posts')
 export class Posts extends Module {
 

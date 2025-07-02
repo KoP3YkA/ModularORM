@@ -10,14 +10,11 @@ beforeAll(async () => {
     await setupOrm()
 })
 
-beforeEach(async () => {
-    await studentsRepository.deleteAllManyToManyRelations('courses')
-    await studentsRepository.deleteAll();
-    await coursesRepository.deleteAll();
-})
-
 describe('Many to many relations', () => {
     test('Adding rows', async () => {
+        await studentsRepository.deleteAllManyToManyRelations('courses')
+        await studentsRepository.deleteAll();
+        await coursesRepository.deleteAll();
         await coursesRepository.insert({ title: 'Programming' })
 
         const course = new Courses()
@@ -48,6 +45,9 @@ describe('Many to many relations', () => {
     })
 
     test('Deleting rows', async () => {
+        await studentsRepository.deleteAllManyToManyRelations('courses')
+        await studentsRepository.deleteAll();
+        await coursesRepository.deleteAll();
         await coursesRepository.insert({ title: 'Cooking' })
         await coursesRepository.insert({ title: 'Hobby horsing' })
 
@@ -87,6 +87,9 @@ describe('Many to many relations', () => {
     })
 
     test('Updating rows', async () => {
+        await studentsRepository.deleteAllManyToManyRelations('courses')
+        await studentsRepository.deleteAll();
+        await coursesRepository.deleteAll();
         await coursesRepository.insert({ title: 'Painting' })
 
         const course = new Courses();

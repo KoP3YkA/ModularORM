@@ -1,7 +1,7 @@
 import {AutoIncrementId, Column, ColumnType, Module, NamedTable, OneToMany, Result, Table, ToNumber} from '../../src'
 import {RankDTO, Ranks} from "./Ranks";
 
-@Table()
+@Table({ priority: 1001 })
 @NamedTable('members')
 export class Members extends Module {
 

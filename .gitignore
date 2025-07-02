@@ -4,5 +4,6 @@
 /last-readme.md
 /ignore
 /coverage
+.env
 
 source-code.rar
